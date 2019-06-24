@@ -7,5 +7,7 @@ func service_transfer_make_request(seqnum byte, data []byte) *Request {
 	return r
 }
 
-func service_transfer_handle_response() {
+func service_transfer_handle_response(r *Response) {
+
+	r.service_data["sequence_number_echo"] = "todo" //r.data[0]
 }

@@ -35,6 +35,10 @@ func (q *QueueConnection) send(payload []byte) {
 	q.touser.PushBack(payload)
 }
 func (q *QueueConnection) wait_frame() []byte {
-	//q.fromuser.get()
+	if q.fromuser.Len() > 0 {
+		e := q.fromuser.Front()
+		q.fromuser.Remove(e)
+		return e.Value.([]byte)
+	}
 	return []byte{}
 }

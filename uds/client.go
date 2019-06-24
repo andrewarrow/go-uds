@@ -24,6 +24,6 @@ func (c *Client) transfer_data(seqnum byte, data []byte) *Response {
 	req := service_transfer_make_request(seqnum, data)
 
 	ponse := c.send_request(req)
-	service_transfer_handle_response()
+	service_transfer_handle_response(ponse)
 	return ponse
 }
