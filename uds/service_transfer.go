@@ -7,5 +7,5 @@ func service_transfer_make_request(seqnum byte, data []byte) *Request {
 	return r
 }
 
-func interpret_response() {
+func service_transfer_handle_response() {
 }
