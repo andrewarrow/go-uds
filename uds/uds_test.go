@@ -14,10 +14,12 @@ func TestClient(t *testing.T) {
 	client := NewClient(conn, 0.2)
 
 	go func() {
-		fmt.Println("wait for request")
+		fmt.Println("wait for REQuest")
 		conn.other()
-		fmt.Println("we have the request")
+		fmt.Println("we have the REQuest")
+		conn.fromuserm.Lock()
 		conn.fromuser.PushBack([]byte{0x76, 0x22, 0x89, 0xab, 0xcd, 0xef})
+		conn.fromuserm.Unlock()
 	}()
 
 	go func() {
@@ -27,5 +29,5 @@ func TestClient(t *testing.T) {
 		eq(t, response.service_data["sequence_number_echo"], 0x22, "TestClient")
 	}()
 
-	time.Sleep(200)
+	time.Sleep(2 * time.Second)
 }
