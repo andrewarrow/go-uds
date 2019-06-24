@@ -1,23 +1,53 @@
 package uds
 
-//import "fmt"
-import "github.com/andrewarrow/go-isotp/isotp"
+import "fmt"
+import "strings"
 
 type Client struct {
-	conn                       isotp.AnyConn
+	conn                       interface{}
 	timeout                    float32
 	suppress_positive_response bool
 }
 
-func NewClient(connection isotp.AnyConn, timeout float32) *Client {
+func NewClient(connection interface{}, timeout float32) *Client {
 	c := Client{}
 	c.conn = connection
 	c.suppress_positive_response = true
 	return &c
 }
 
+func Empty_rxqueue(conn interface{}) {
+	name := fmt.Sprintf("%v", conn)
+	tokens := strings.Split(name[2:], " ")
+	fmt.Println(tokens[0])
+	if tokens[0] == "queue" {
+		qc := conn.(*QueueConnection)
+		qc.Empty_rxqueue()
+	}
+}
+func Wait_frame(conn interface{}) []byte {
+	name := fmt.Sprintf("%v", conn)
+	tokens := strings.Split(name[2:], " ")
+
+	if tokens[0] == "queue" {
+		qc := conn.(*QueueConnection)
+		return qc.Wait_frame()
+	}
+
+	b := []byte{}
+	return b
+}
+func Send(conn interface{}, data []byte) {
+	name := fmt.Sprintf("%v", conn)
+	tokens := strings.Split(name[2:], " ")
+	if tokens[0] == "queue" {
+		qc := conn.(*QueueConnection)
+		qc.Send(data)
+	}
+}
+
 func (c *Client) send_request(request *Request) *Response {
-	c.conn.Empty_rxqueue()
+	Empty_rxqueue(c.conn)
 	payload := []byte{}
 	//override_suppress_positive_response := false
 	if c.suppress_positive_response && request.use_subfunction {
@@ -26,8 +56,8 @@ func (c *Client) send_request(request *Request) *Response {
 	} else {
 		payload = request.get_payload(false)
 	}
-	c.conn.Send(payload)
-	data := c.conn.Wait_frame()
+	Send(c.conn, payload)
+	data := Wait_frame(c.conn)
 	response := response_from_payload(data)
 	return response
 }

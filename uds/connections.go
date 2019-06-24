@@ -7,6 +7,7 @@ import "time"
 import "sync"
 
 type QueueConnection struct {
+	base      string
 	name      string
 	mtu       int
 	fromuser  *list.List
@@ -17,6 +18,7 @@ type QueueConnection struct {
 
 func NewQueueConnection(name string, mtu int) *QueueConnection {
 	q := QueueConnection{}
+	q.base = "queue"
 	q.name = name
 	q.mtu = mtu
 	q.fromuser = list.New()
