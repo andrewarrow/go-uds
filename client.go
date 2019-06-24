@@ -32,7 +32,7 @@ func (c *Client) send_request(request *Request) *Response {
 	return response
 }
 
-func (c *Client) transfer_data(seqnum byte, data []byte) *Response {
+func (c *Client) Transfer_data(seqnum byte, data []byte) *Response {
 	req := service_transfer_make_request(seqnum, data)
 	ponse := c.send_request(req)
 	service_transfer_handle_response(ponse)

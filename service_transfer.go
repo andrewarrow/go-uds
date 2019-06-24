@@ -10,10 +10,10 @@ func service_transfer_make_request(seqnum byte, data []byte) *Request {
 
 func service_transfer_handle_response(r *Response) {
 
-	r.service_data["sequence_number_echo"] = r.data[0]
-	r.service_data["parameter_records"] = []byte{}
-	if len(r.data) > 1 {
-		r.service_data["parameter_records"] = r.data[1:]
+	r.Service_data["sequence_number_echo"] = r.Data[0]
+	r.Service_data["parameter_records"] = []byte{}
+	if len(r.Data) > 1 {
+		r.Service_data["parameter_records"] = r.Data[1:]
 	}
 
 }

@@ -1,21 +1,21 @@
 package uds
 
 type Response struct {
-	service      string
-	data         []byte
-	service_data map[string]interface{}
+	Service      string
+	Data         []byte
+	Service_data map[string]interface{}
 }
 
 func NewResponse(service string) *Response {
 	r := Response{}
-	r.service = service
-	r.data = []byte{}
-	r.service_data = map[string]interface{}{}
+	r.Service = service
+	r.Data = []byte{}
+	r.Service_data = map[string]interface{}{}
 	return &r
 }
 func response_from_payload(data []byte) *Response {
 	r := Response{}
-	r.data = data[1:]
-	r.service_data = map[string]interface{}{}
+	r.Data = data[1:]
+	r.Service_data = map[string]interface{}{}
 	return &r
 }
