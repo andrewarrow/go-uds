@@ -47,7 +47,7 @@ func (q *QueueConnection) send(payload []byte) {
 	defer q.touserm.Unlock()
 	q.touser.PushBack(payload)
 }
-func (q *QueueConnection) other() []byte {
+func (q *QueueConnection) touser_frame() []byte {
 	for {
 		q.touserm.Lock()
 		if q.touser.Len() > 0 {

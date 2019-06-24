@@ -5,16 +5,20 @@ import "testing"
 import "time"
 import "os"
 
+var conn *QueueConnection
+var client *Client
+
 func TestMain(m *testing.M) {
+	conn = NewQueueConnection("test", 4095)
+	client = NewClient(conn, 0.2)
 	os.Exit(m.Run())
 }
 
 func TestTransferData(t *testing.T) {
-	conn := NewQueueConnection("test", 4095)
-	client := NewClient(conn, 0.2)
 
 	go func() {
-		conn.other()
+		r := conn.touser_frame()
+		eq(t, r, []byte{0x36, 0x22, 0x12, 0x34, 0x56})
 		conn.fromuserm.Lock()
 		conn.fromuser.PushBack([]byte{0x76, 0x22, 0x89, 0xab, 0xcd, 0xef})
 		conn.fromuserm.Unlock()
