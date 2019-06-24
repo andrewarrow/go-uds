@@ -13,3 +13,9 @@ func NewResponse(service string) *Response {
 	r.service_data = map[string]interface{}{}
 	return &r
 }
+func response_from_payload(data []byte) *Response {
+	r := Response{}
+	r.data = []byte{}
+	r.service_data = map[string]interface{}{}
+	return &r
+}
