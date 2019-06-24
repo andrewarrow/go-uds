@@ -2,7 +2,8 @@ package uds
 
 import "container/list"
 import "time"
-import "fmt"
+
+//import "fmt"
 import "sync"
 
 type AnyConn interface {
@@ -31,19 +32,17 @@ func NewQueueConnection(name string, mtu int) *QueueConnection {
 }
 
 func (q *QueueConnection) empty_rxqueue() {
-	fmt.Println("                      empty_fromuser")
 	q.fromuserm.Lock()
 	defer q.fromuserm.Unlock()
 	q.fromuser.Init()
 }
 func (q *QueueConnection) empty_txqueue() {
-	fmt.Println("                      empty_touser")
 	q.touserm.Lock()
 	defer q.touserm.Unlock()
 	q.touser.Init()
 }
 func (q *QueueConnection) send(payload []byte) {
-	fmt.Printf("                      sending to touser %v\n", payload)
+	//fmt.Printf("                      sending to touser %v\n", payload)
 	q.touserm.Lock()
 	defer q.touserm.Unlock()
 	q.touser.PushBack(payload)
@@ -56,7 +55,7 @@ func (q *QueueConnection) other() []byte {
 			q.touser.Remove(e)
 			q.touserm.Unlock()
 			val := e.Value.([]byte)
-			fmt.Printf("                     reading from touser %v\n", val)
+			//fmt.Printf("                     reading from touser %v\n", val)
 			return val
 		}
 		q.touserm.Unlock()
@@ -72,7 +71,7 @@ func (q *QueueConnection) wait_frame() []byte {
 			q.fromuser.Remove(e)
 			q.fromuserm.Unlock()
 			val := e.Value.([]byte)
-			fmt.Printf("                     reading from fromuser %v\n", val)
+			//fmt.Printf("                     reading from fromuser %v\n", val)
 			return val
 		}
 		q.fromuserm.Unlock()
