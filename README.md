@@ -7,6 +7,13 @@ It is a port of python version: https://github.com/pylessard/python-udsoncan
 
 UDS runs on top of the isotp protocol:
 
-go-isotp: https://github.com/andrewarrow/go-isotp
+also port of Python version https://github.com/pylessard/python-can-isotp
+
+does not require https://github.com/hartkopp/can-isotp
+
+but reading canbus data from real device requires native c code for darwin, windows and linux.
+
+you define stack_rxfn and stack_txfn functions that will call the native c code for real data.
+
 
 
