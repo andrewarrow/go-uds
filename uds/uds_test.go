@@ -1,4 +1,4 @@
-package isotp
+package uds
 
 import "fmt"
 import "testing"

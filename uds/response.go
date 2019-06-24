@@ -1,4 +1,4 @@
-package isotp
+package uds
 
 type Response struct {
 	flavor string

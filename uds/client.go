@@ -1,4 +1,4 @@
-package isotp
+package uds
 
 type Client struct {
 	connection interface{}
@@ -12,6 +12,6 @@ func NewClient(connection interface{}, timeout float32) *Client {
 }
 
 func (c *Client) transfer_data(seqnum int, data []byte) *Response {
-	r := NewResponse()
+	r := service_transfer_make_request(seqnum, data)
 	return r
 }
