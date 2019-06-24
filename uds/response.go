@@ -1,10 +1,13 @@
 package uds
 
 type Response struct {
-	flavor string
+	service string
+	data    []byte
 }
 
-func NewResponse() *Response {
+func NewResponse(service string) *Response {
 	r := Response{}
+	r.service = service
+	r.data = []byte{}
 	return &r
 }
