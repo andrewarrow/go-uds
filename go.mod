@@ -1,4 +1,4 @@
-module github.com/andrewarrow/go-uds
+module github.com/andrewarrow/go-uds/uds
 
 go 1.13
 
