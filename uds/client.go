@@ -1,14 +1,15 @@
 package uds
 
 //import "fmt"
+import "github.com/andrewarrow/go-isotp/isotp"
 
 type Client struct {
-	conn                       AnyConn
+	conn                       isotp.AnyConn
 	timeout                    float32
 	suppress_positive_response bool
 }
 
-func NewClient(connection AnyConn, timeout float32) *Client {
+func NewClient(connection isotp.AnyConn, timeout float32) *Client {
 	c := Client{}
 	c.conn = connection
 	c.suppress_positive_response = true
@@ -16,7 +17,7 @@ func NewClient(connection AnyConn, timeout float32) *Client {
 }
 
 func (c *Client) send_request(request *Request) *Response {
-	c.conn.empty_rxqueue()
+	c.conn.Empty_rxqueue()
 	payload := []byte{}
 	//override_suppress_positive_response := false
 	if c.suppress_positive_response && request.use_subfunction {
@@ -25,8 +26,8 @@ func (c *Client) send_request(request *Request) *Response {
 	} else {
 		payload = request.get_payload(false)
 	}
-	c.conn.send(payload)
-	data := c.conn.wait_frame()
+	c.conn.Send(payload)
+	data := c.conn.Wait_frame()
 	response := response_from_payload(data)
 	return response
 }

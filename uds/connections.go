@@ -6,13 +6,6 @@ import "time"
 //import "fmt"
 import "sync"
 
-type AnyConn interface {
-	empty_rxqueue()
-	empty_txqueue()
-	send(payload []byte)
-	wait_frame() []byte
-}
-
 type QueueConnection struct {
 	name      string
 	mtu       int
@@ -31,17 +24,17 @@ func NewQueueConnection(name string, mtu int) *QueueConnection {
 	return &q
 }
 
-func (q *QueueConnection) empty_rxqueue() {
+func (q *QueueConnection) Empty_rxqueue() {
 	q.fromuserm.Lock()
 	defer q.fromuserm.Unlock()
 	q.fromuser.Init()
 }
-func (q *QueueConnection) empty_txqueue() {
+func (q *QueueConnection) Empty_txqueue() {
 	q.touserm.Lock()
 	defer q.touserm.Unlock()
 	q.touser.Init()
 }
-func (q *QueueConnection) send(payload []byte) {
+func (q *QueueConnection) Send(payload []byte) {
 	//fmt.Printf("                      sending to touser %v\n", payload)
 	q.touserm.Lock()
 	defer q.touserm.Unlock()
@@ -63,7 +56,7 @@ func (q *QueueConnection) touser_frame() []byte {
 	}
 	return []byte{}
 }
-func (q *QueueConnection) wait_frame() []byte {
+func (q *QueueConnection) Wait_frame() []byte {
 	for {
 		q.fromuserm.Lock()
 		if q.fromuser.Len() > 0 {
