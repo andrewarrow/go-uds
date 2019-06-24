@@ -1,6 +1,8 @@
 package uds
 
 import "container/list"
+import "time"
+import "fmt"
 
 type AnyConn interface {
 	empty_rxqueue()
@@ -26,19 +28,38 @@ func NewQueueConnection(name string, mtu int) *QueueConnection {
 }
 
 func (q *QueueConnection) empty_rxqueue() {
+	fmt.Println("                      empty_fromuser")
 	q.fromuser.Init()
 }
 func (q *QueueConnection) empty_txqueue() {
+	fmt.Println("                      empty_touser")
 	q.touser.Init()
 }
 func (q *QueueConnection) send(payload []byte) {
+	fmt.Println("                      sending to touser")
 	q.touser.PushBack(payload)
 }
+func (q *QueueConnection) other() []byte {
+	for {
+		if q.touser.Len() > 0 {
+			e := q.touser.Front()
+			q.touser.Remove(e)
+			fmt.Println("                     reading from touser")
+			return e.Value.([]byte)
+		}
+		time.Sleep(1 * time.Millisecond)
+	}
+	return []byte{}
+}
 func (q *QueueConnection) wait_frame() []byte {
-	if q.fromuser.Len() > 0 {
-		e := q.fromuser.Front()
-		q.fromuser.Remove(e)
-		return e.Value.([]byte)
+	for {
+		if q.fromuser.Len() > 0 {
+			e := q.fromuser.Front()
+			q.fromuser.Remove(e)
+			fmt.Println("                     reading from fromuser")
+			return e.Value.([]byte)
+		}
+		time.Sleep(1 * time.Millisecond)
 	}
 	return []byte{}
 }

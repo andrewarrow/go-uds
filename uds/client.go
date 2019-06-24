@@ -1,5 +1,7 @@
 package uds
 
+import "fmt"
+
 type Client struct {
 	conn    AnyConn
 	timeout float32
@@ -22,8 +24,10 @@ func (c *Client) send_request(request *Request) *Response {
 
 func (c *Client) transfer_data(seqnum byte, data []byte) *Response {
 	req := service_transfer_make_request(seqnum, data)
-
+	fmt.Println("  - req made")
 	ponse := c.send_request(req)
+	fmt.Println("  - ponse got")
 	service_transfer_handle_response(ponse)
+	fmt.Println("  - handled")
 	return ponse
 }
