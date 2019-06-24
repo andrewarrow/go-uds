@@ -33,7 +33,7 @@ func (ic *IsotpConnection) Empty_txqueue() {
 }
 func (ic *IsotpConnection) Send(payload []byte) {
 	//todo
-	msg := Message{}
+	msg := NewMessage(0, payload)
 	ic.txfn(msg)
 }
 func (ic *IsotpConnection) Wait_frame() []byte {
