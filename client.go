@@ -1,7 +1,7 @@
 package uds
 
 //import "fmt"
-import "../isotp"
+import "github.com/andrewarrow/go-uds/isotp"
 
 type Client struct {
 	conn                       isotp.AnyConn
