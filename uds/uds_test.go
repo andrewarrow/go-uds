@@ -19,6 +19,7 @@ func TestClient(t *testing.T) {
 		fmt.Println("we have the REQuest")
 		conn.fromuserm.Lock()
 		conn.fromuser.PushBack([]byte{0x76, 0x22, 0x89, 0xab, 0xcd, 0xef})
+		fmt.Printf("pushback fromuser %v\n", []byte{0x76, 0x22, 0x89, 0xab, 0xcd, 0xef})
 		conn.fromuserm.Unlock()
 	}()
 
@@ -29,5 +30,5 @@ func TestClient(t *testing.T) {
 		eq(t, response.service_data["sequence_number_echo"], 0x22, "TestClient")
 	}()
 
-	time.Sleep(2 * time.Second)
+	time.Sleep(20 * time.Millisecond)
 }

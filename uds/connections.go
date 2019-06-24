@@ -43,7 +43,7 @@ func (q *QueueConnection) empty_txqueue() {
 	q.touser.Init()
 }
 func (q *QueueConnection) send(payload []byte) {
-	fmt.Println("                      sending to touser")
+	fmt.Printf("                      sending to touser %v\n", payload)
 	q.touserm.Lock()
 	defer q.touserm.Unlock()
 	q.touser.PushBack(payload)
@@ -54,9 +54,10 @@ func (q *QueueConnection) other() []byte {
 		if q.touser.Len() > 0 {
 			e := q.touser.Front()
 			q.touser.Remove(e)
-			fmt.Println("                     reading from touser")
 			q.touserm.Unlock()
-			return e.Value.([]byte)
+			val := e.Value.([]byte)
+			fmt.Printf("                     reading from touser %v\n", val)
+			return val
 		}
 		q.touserm.Unlock()
 		time.Sleep(1 * time.Millisecond)
@@ -69,9 +70,10 @@ func (q *QueueConnection) wait_frame() []byte {
 		if q.fromuser.Len() > 0 {
 			e := q.fromuser.Front()
 			q.fromuser.Remove(e)
-			fmt.Println("                     reading from fromuser")
 			q.fromuserm.Unlock()
-			return e.Value.([]byte)
+			val := e.Value.([]byte)
+			fmt.Printf("                     reading from fromuser %v\n", val)
+			return val
 		}
 		q.fromuserm.Unlock()
 		time.Sleep(1 * time.Millisecond)
