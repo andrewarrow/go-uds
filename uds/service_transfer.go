@@ -1,9 +1,10 @@
 package uds
 
 func service_transfer_make_request(seqnum byte, data []byte) *Request {
-	r := NewRequest("transfer")
+	r := NewRequest(0x36, "transfer")
 	r.data = []byte{seqnum}
 	r.data = append(r.data, data...)
+	r.use_subfunction = false
 	return r
 }
 

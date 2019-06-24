@@ -21,8 +21,8 @@ func TestTransferData(t *testing.T) {
 	}()
 
 	response := client.transfer_data(0x22, []byte{0x12, 0x34, 0x56})
-	eq(t, response.service_data["sequence_number_echo"], 0x22, "TestTransferData")
-	eq(t, response.service_data["parameter_records"], []byte{0x89, 0xab, 0xcd, 0xef}, "TestTransferData")
+	eq(t, response.service_data["sequence_number_echo"], 0x22)
+	eq(t, response.service_data["parameter_records"], []byte{0x89, 0xab, 0xcd, 0xef})
 
 	time.Sleep(20 * time.Millisecond)
 }
