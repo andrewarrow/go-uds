@@ -1,6 +1,7 @@
 package isotp
 
 import "time"
+import "container/list"
 
 type AnyConn interface {
 	Empty_rxqueue()
@@ -10,11 +11,12 @@ type AnyConn interface {
 }
 
 type IsotpConnection struct {
-	name  string
-	mtu   int
-	Stack *Transport
-	rxfn  func() (Message, bool)
-	txfn  func(msg Message)
+	name     string
+	mtu      int
+	rx_queue *list.List
+	Stack    *Transport
+	rxfn     func() (Message, bool)
+	txfn     func(msg Message)
 }
 
 func NewIsotpConnection(rx, tx int, rxfn func() (Message, bool),
@@ -24,7 +26,21 @@ func NewIsotpConnection(rx, tx int, rxfn func() (Message, bool),
 	ic.Stack = NewTransport(a, rxfn, txfn)
 	ic.rxfn = rxfn
 	ic.txfn = txfn
+	ic.rx_queue = list.New()
 	return &ic
+}
+
+func (ic *IsotpConnection) Open() {
+	go func() {
+		//rxthread
+		for {
+			msg, ok := ic.rxfn()
+			if ok {
+				ic.rx_queue.PushBack(msg.Payload)
+			}
+			time.Sleep(20 * time.Millisecond)
+		}
+	}()
 }
 
 func (ic *IsotpConnection) Empty_rxqueue() {
@@ -38,9 +54,11 @@ func (ic *IsotpConnection) Send(payload []byte) {
 func (ic *IsotpConnection) Wait_frame() []byte {
 	count := 0
 	for {
-		msg, ok := ic.rxfn()
-		if ok {
-			return msg.GetData()
+		if rx_queue.Len() > 0 {
+			e := rx_queue.Front()
+			rx_queue.Remove(e)
+			m := e.Value.(Message)
+			return m.Payload
 		}
 		time.Sleep(1 * time.Millisecond)
 		count++

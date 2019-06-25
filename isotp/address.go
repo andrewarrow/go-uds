@@ -37,7 +37,7 @@ func NewAddress(rxid, txid int) Address {
 
 func (a Address) is_for_me(msg Message) bool {
 	if a.is_29bits() == msg.extended_id {
-		return msg.arbitration_id == a.rxid
+		return msg.Id == a.rxid
 	}
 	return false
 }

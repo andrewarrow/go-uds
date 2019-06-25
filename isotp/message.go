@@ -3,21 +3,16 @@ package isotp
 //import "fmt"
 
 type Message struct {
-	arbitration_id int
-	dlc            int
-	payload        []byte
-	extended_id    bool
+	Id          int
+	Payload     []byte
+	extended_id bool
 }
 
-func NewMessage(arbitration_id int, payload []byte) Message {
+func NewMessage(id int, payload []byte) Message {
 	m := Message{}
-	m.payload = payload
-	m.arbitration_id = arbitration_id
+	m.Id = id
+	m.Payload = payload
 	return m
-}
-
-func (m Message) GetData() []byte {
-	return m.payload
 }
 
 type PDU struct {
@@ -36,8 +31,8 @@ func NewPDU(msg Message, start_of_data int, data_length int) PDU {
 	pdu := PDU{}
 	pdu.msg = msg
 
-	if len(msg.payload) > start_of_data {
-		h := (msg.payload[start_of_data] >> 4) & 0xF
+	if len(msg.Payload) > start_of_data {
+		h := (msg.Payload[start_of_data] >> 4) & 0xF
 		if h == 0 {
 			pdu.flavor = SINGLE
 		} else if h == 1 {
@@ -49,16 +44,16 @@ func NewPDU(msg Message, start_of_data int, data_length int) PDU {
 		}
 	}
 	if pdu.flavor == SINGLE {
-		pdu.length = int(msg.payload[start_of_data]) & 0xF
-		pdu.payload = msg.payload[0+start_of_data : len(msg.payload)][1 : pdu.length+1]
+		pdu.length = int(msg.Payload[start_of_data]) & 0xF
+		pdu.payload = msg.Payload[0+start_of_data : len(msg.Payload)][1 : pdu.length+1]
 	} else if pdu.flavor == FIRST {
-		pdu.length = ((int(msg.payload[start_of_data]) & 0xF) << 8) | int(msg.payload[start_of_data+1])
-		pdu.payload = msg.payload[2+start_of_data : len(msg.payload)][0:min(pdu.length, data_length-2-start_of_data)]
+		pdu.length = ((int(msg.Payload[start_of_data]) & 0xF) << 8) | int(msg.Payload[start_of_data+1])
+		pdu.payload = msg.Payload[2+start_of_data : len(msg.Payload)][0:min(pdu.length, data_length-2-start_of_data)]
 	} else if pdu.flavor == CONSECUTIVE {
-		pdu.seqnum = int(msg.payload[start_of_data]) & 0xF
-		pdu.payload = msg.payload[start_of_data+1 : data_length]
+		pdu.seqnum = int(msg.Payload[start_of_data]) & 0xF
+		pdu.payload = msg.Payload[start_of_data+1 : data_length]
 	} else if pdu.flavor == FLOW {
-		f := int(msg.payload[start_of_data]) & 0xF
+		f := int(msg.Payload[start_of_data]) & 0xF
 		if f == 0 {
 			pdu.flow = SINGLE
 		} else if f == 1 {
@@ -69,8 +64,8 @@ func NewPDU(msg Message, start_of_data int, data_length int) PDU {
 			pdu.flow = FLOW
 		}
 
-		pdu.blocksize = int(msg.payload[1+start_of_data])
-		stmin_temp := int(msg.payload[2+start_of_data])
+		pdu.blocksize = int(msg.Payload[1+start_of_data])
+		stmin_temp := int(msg.Payload[2+start_of_data])
 
 		if stmin_temp >= 0 && stmin_temp <= 0x7F {
 			pdu.stmin_sec = stmin_temp / 1000

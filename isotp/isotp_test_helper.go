@@ -66,8 +66,7 @@ func assert_sent_flow_control(t *testing.T, stmin, blocksize, tx_padding int) {
 		}
 	}
 
-	compareStrings(t, msg.payload, data, "hi")
-	compareStrings(t, msg.dlc, len(data), "ehy")
+	compareStrings(t, msg.Payload, data, "hi")
 }
 
 func stack_rxfn() (Message, bool) {

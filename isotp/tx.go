@@ -47,7 +47,6 @@ func (t *Transport) pad_message_data(payload []byte) []byte {
 func (t *Transport) make_tx_msg(arbitration_id int, payload []byte) Message {
 	data := t.pad_message_data(payload)
 	m := NewMessage(arbitration_id, data)
-	m.dlc = len(data)
 	m.extended_id = t.address.is_29bits()
 	return m
 }
