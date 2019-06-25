@@ -17,7 +17,7 @@ func NewClient(connection isotp.AnyConn, timeout float32) *Client {
 }
 
 func (c *Client) send_request(request *Request) *Response {
-	fmt.Println(111)
+	//fmt.Println(111)
 	c.conn.Empty_rxqueue()
 	payload := []byte{}
 	//override_suppress_positive_response := false
@@ -27,10 +27,10 @@ func (c *Client) send_request(request *Request) *Response {
 	} else {
 		payload = request.get_payload(false)
 	}
-	fmt.Println(888, payload)
+	//fmt.Println(888, payload)
 	c.conn.Send(payload)
 	data := c.conn.Wait_frame()
-	fmt.Println(777, data)
+	//fmt.Println(777, data)
 	response := response_from_payload(data)
 	return response
 }
@@ -39,15 +39,15 @@ func (c *Client) Transfer_data(seqnum byte, data []byte) *Response {
 	req := service_transfer_make_request(seqnum, data)
 	fmt.Println(req)
 	ponse := c.send_request(req)
-	fmt.Println(999, ponse)
+	//fmt.Println(999, ponse)
 	service_transfer_handle_response(ponse)
 	return ponse
 }
 func (c *Client) Read_data_by_id(data []int) *Response {
 	req := service_read_data_by_id_make_request(data)
-	fmt.Println(req)
+	//fmt.Println(req)
 	ponse := c.send_request(req)
-	fmt.Println(999, ponse)
+	//fmt.Println(999, ponse)
 	service_read_data_by_id_handle_response(ponse)
 	return ponse
 }
