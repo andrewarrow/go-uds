@@ -1,6 +1,8 @@
 package isotp
 
 import "time"
+
+//import "fmt"
 import "container/list"
 
 type AnyConn interface {
@@ -36,7 +38,7 @@ func (ic *IsotpConnection) Open() {
 		for {
 			msg, ok := ic.rxfn()
 			if ok {
-				ic.rx_queue.PushBack(msg.Payload)
+				ic.rx_queue.PushBack(msg.ToBytes())
 			}
 			time.Sleep(20 * time.Millisecond)
 		}
@@ -57,8 +59,8 @@ func (ic *IsotpConnection) Wait_frame() []byte {
 		if ic.rx_queue.Len() > 0 {
 			e := ic.rx_queue.Front()
 			ic.rx_queue.Remove(e)
-			m := e.Value.(Message)
-			return m.Payload
+			m := e.Value.([]byte)
+			return m
 		}
 		time.Sleep(1 * time.Millisecond)
 		count++

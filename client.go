@@ -27,10 +27,10 @@ func (c *Client) send_request(request *Request) *Response {
 	} else {
 		payload = request.get_payload(false)
 	}
-	//fmt.Println(888, payload)
+	fmt.Println(888, payload)
 	c.conn.Send(payload)
 	data := c.conn.Wait_frame()
-	//fmt.Println(777, data)
+	fmt.Println(777, data)
 	response := response_from_payload(data)
 	return response
 }

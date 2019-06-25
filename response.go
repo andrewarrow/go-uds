@@ -15,6 +15,9 @@ func NewResponse(service string) *Response {
 }
 func response_from_payload(data []byte) *Response {
 	r := Response{}
+	if len(data) == 0 {
+		return &r
+	}
 	r.Data = data[1:]
 	r.Service_data = map[string]interface{}{}
 	return &r

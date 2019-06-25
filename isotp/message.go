@@ -15,6 +15,10 @@ func NewMessage(id int, payload []byte) Message {
 	return m
 }
 
+func (m Message) ToBytes() []byte {
+	return append([]byte{byte(m.Id)}, m.Payload...)
+}
+
 type PDU struct {
 	msg       Message
 	flavor    string
