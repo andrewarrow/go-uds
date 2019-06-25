@@ -4,9 +4,9 @@ import "testing"
 import "container/list"
 import "fmt"
 
-var rx_queue *list.List
-var tx_queue *list.List
-var stack *Transport
+var test_rx_queue *list.List
+var test_tx_queue *list.List
+var test_stack *Transport
 var RXID int
 var TXID int
 
@@ -41,7 +41,7 @@ func make_payload(size, start_val int) []byte {
 }
 
 func simulate_rx(b []byte) {
-	rx_queue.PushBack(NewMessage(RXID, b))
+	test_rx_queue.PushBack(NewMessage(RXID, b))
 }
 func ensureEmpty(t *testing.T, b []byte) {
 	if len(b) != 0 {
@@ -70,21 +70,21 @@ func assert_sent_flow_control(t *testing.T, stmin, blocksize, tx_padding int) {
 }
 
 func stack_rxfn() (Message, bool) {
-	if rx_queue.Len() > 0 {
-		e := rx_queue.Front()
-		rx_queue.Remove(e)
+	if test_rx_queue.Len() > 0 {
+		e := test_rx_queue.Front()
+		test_rx_queue.Remove(e)
 		return e.Value.(Message), true
 	}
 	return Message{}, false
 }
 func get_tx_can_msg() (Message, bool) {
-	if tx_queue.Len() > 0 {
-		e := tx_queue.Front()
-		tx_queue.Remove(e)
+	if test_tx_queue.Len() > 0 {
+		e := test_tx_queue.Front()
+		test_tx_queue.Remove(e)
 		return e.Value.(Message), true
 	}
 	return Message{}, false
 }
 func stack_txfn(m Message) {
-	tx_queue.PushBack(m)
+	test_tx_queue.PushBack(m)
 }

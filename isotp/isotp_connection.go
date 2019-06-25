@@ -54,9 +54,9 @@ func (ic *IsotpConnection) Send(payload []byte) {
 func (ic *IsotpConnection) Wait_frame() []byte {
 	count := 0
 	for {
-		if rx_queue.Len() > 0 {
-			e := rx_queue.Front()
-			rx_queue.Remove(e)
+		if ic.rx_queue.Len() > 0 {
+			e := ic.rx_queue.Front()
+			ic.rx_queue.Remove(e)
 			m := e.Value.(Message)
 			return m.Payload
 		}

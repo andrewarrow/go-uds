@@ -10,47 +10,47 @@ import "fmt"
 func TestMain(m *testing.M) {
 	RXID = 0x456
 	TXID = 0x123
-	rx_queue = list.New()
-	tx_queue = list.New()
+	test_rx_queue = list.New()
+	test_tx_queue = list.New()
 	a := NewAddress(RXID, TXID)
-	stack = NewTransport(a, stack_rxfn, stack_txfn)
+	test_stack = NewTransport(a, stack_rxfn, stack_txfn)
 	os.Exit(m.Run())
 }
 func TestSingleFrame(t *testing.T) {
 	a := []byte{0x05, 0x11, 0x22, 0x33, 0x44, 0x55}
 	msg := NewMessage(RXID, a)
-	rx_queue.PushBack(msg)
-	stack.Process()
-	compareStrings(t, stack.Recv(), a[1:], "")
+	test_rx_queue.PushBack(msg)
+	test_stack.Process()
+	compareStrings(t, test_stack.Recv(), a[1:], "")
 }
 
 func TestMultiSingleFrame(t *testing.T) {
-	stack.Process()
-	stack.Process()
+	test_stack.Process()
+	test_stack.Process()
 	a := []byte{0x05, 0x11, 0x22, 0x33, 0x44, 0x55}
 	msg := NewMessage(RXID, a)
-	rx_queue.PushBack(msg)
-	stack.Process()
-	compareStrings(t, stack.Recv(), a[1:], "")
+	test_rx_queue.PushBack(msg)
+	test_stack.Process()
+	compareStrings(t, test_stack.Recv(), a[1:], "")
 
-	if len(stack.Recv()) != 0 {
+	if len(test_stack.Recv()) != 0 {
 		t.Fail()
 	}
-	stack.Process()
-	if len(stack.Recv()) != 0 {
+	test_stack.Process()
+	if len(test_stack.Recv()) != 0 {
 		t.Fail()
 	}
 
 	b := []byte{0x05, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE}
 	msg = NewMessage(RXID, b)
-	rx_queue.PushBack(msg)
-	stack.Process()
-	compareStrings(t, stack.Recv(), b[1:], "")
-	if len(stack.Recv()) != 0 {
+	test_rx_queue.PushBack(msg)
+	test_stack.Process()
+	compareStrings(t, test_stack.Recv(), b[1:], "")
+	if len(test_stack.Recv()) != 0 {
 		t.Fail()
 	}
-	stack.Process()
-	if len(stack.Recv()) != 0 {
+	test_stack.Process()
+	if len(test_stack.Recv()) != 0 {
 		t.Fail()
 	}
 }
@@ -58,12 +58,12 @@ func TestMultiSingleFrame(t *testing.T) {
 func TestMultipleSingleProcess(t *testing.T) {
 	a := []byte{0x05, 0x11, 0x22, 0x33, 0x44, 0x55}
 	b := []byte{0x05, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE}
-	rx_queue.PushBack(NewMessage(RXID, a))
-	rx_queue.PushBack(NewMessage(RXID, b))
-	stack.Process()
-	compareStrings(t, stack.Recv(), a[1:], "")
-	compareStrings(t, stack.Recv(), b[1:], "")
-	if len(stack.Recv()) != 0 {
+	test_rx_queue.PushBack(NewMessage(RXID, a))
+	test_rx_queue.PushBack(NewMessage(RXID, b))
+	test_stack.Process()
+	compareStrings(t, test_stack.Recv(), a[1:], "")
+	compareStrings(t, test_stack.Recv(), b[1:], "")
+	if len(test_stack.Recv()) != 0 {
 		t.Fail()
 	}
 }
@@ -74,9 +74,9 @@ func TestMultiFrame(t *testing.T) {
 	simulate_rx(append([]byte{0x10, byte(size)}, payload[0:6]...))
 	simulate_rx(append([]byte{0x21}, payload[6:10]...))
 
-	stack.Process()
-	compareStrings(t, stack.Recv(), payload, "")
-	ensureEmpty(t, stack.Recv())
+	test_stack.Process()
+	compareStrings(t, test_stack.Recv(), payload, "")
+	ensureEmpty(t, test_stack.Recv())
 }
 func TestTwoMultiFrame(t *testing.T) {
 	size := 10
@@ -85,74 +85,74 @@ func TestTwoMultiFrame(t *testing.T) {
 	simulate_rx(append([]byte{0x21}, payload[6:10]...))
 	simulate_rx(append([]byte{0x10, byte(size)}, payload[0:6]...))
 	simulate_rx(append([]byte{0x21}, payload[6:10]...))
-	stack.Process()
-	compareStrings(t, stack.Recv(), payload, "")
-	compareStrings(t, stack.Recv(), payload, "")
-	ensureEmpty(t, stack.Recv())
+	test_stack.Process()
+	compareStrings(t, test_stack.Recv(), payload, "")
+	compareStrings(t, test_stack.Recv(), payload, "")
+	ensureEmpty(t, test_stack.Recv())
 }
 func TestMultiFrameFlowControl(t *testing.T) {
-	stack.Stmin = 0x02
-	stack.Blocksize = 0x05
+	test_stack.Stmin = 0x02
+	test_stack.Blocksize = 0x05
 	size := 10
 	payload := make_payload(size, 0)
 	simulate_rx(append([]byte{0x10, byte(size)}, payload[0:6]...))
-	stack.Process()
+	test_stack.Process()
 	assert_sent_flow_control(t, 2, 5, 0)
-	ensureEmpty(t, stack.Recv())
+	ensureEmpty(t, test_stack.Recv())
 	simulate_rx(append([]byte{0x21}, payload[6:10]...))
-	stack.Process()
-	compareStrings(t, stack.Recv(), payload, "")
-	ensureEmpty(t, stack.Recv())
+	test_stack.Process()
+	compareStrings(t, test_stack.Recv(), payload, "")
+	ensureEmpty(t, test_stack.Recv())
 }
 func TestMultiFrameFlowControlPadding(t *testing.T) {
-	stack.Stmin = 0x02
-	stack.Blocksize = 0x05
-	stack.tx_padding = 0x22
+	test_stack.Stmin = 0x02
+	test_stack.Blocksize = 0x05
+	test_stack.tx_padding = 0x22
 	size := 10
 	payload := make_payload(size, 0)
 	simulate_rx(append([]byte{0x10, byte(size)}, payload[0:6]...))
-	stack.Process()
-	assert_sent_flow_control(t, 2, 5, stack.tx_padding)
-	ensureEmpty(t, stack.Recv())
+	test_stack.Process()
+	assert_sent_flow_control(t, 2, 5, test_stack.tx_padding)
+	ensureEmpty(t, test_stack.Recv())
 	simulate_rx(append([]byte{0x21}, payload[6:10]...))
-	stack.Process()
-	compareStrings(t, stack.Recv(), payload, "")
-	ensureEmpty(t, stack.Recv())
+	test_stack.Process()
+	compareStrings(t, test_stack.Recv(), payload, "")
+	ensureEmpty(t, test_stack.Recv())
 }
 func TestLongMultiframeFlowControl(t *testing.T) {
 	size := 30
 	payload := make_payload(size, 0)
-	stack.Stmin = 0x05
-	stack.Blocksize = 0x3
-	stack.tx_padding = 0
+	test_stack.Stmin = 0x05
+	test_stack.Blocksize = 0x3
+	test_stack.tx_padding = 0
 	simulate_rx(append([]byte{0x10, byte(size)}, payload[0:6]...))
-	stack.Process()
+	test_stack.Process()
 	assert_sent_flow_control(t, 5, 3, 0)
-	ensureEmpty(t, stack.Recv())
+	ensureEmpty(t, test_stack.Recv())
 	simulate_rx(append([]byte{0x21}, payload[6:13]...))
-	stack.Process()
-	ensureEmpty(t, stack.Recv())
+	test_stack.Process()
+	ensureEmpty(t, test_stack.Recv())
 	simulate_rx(append([]byte{0x22}, payload[13:20]...))
-	stack.Process()
-	ensureEmpty(t, stack.Recv())
+	test_stack.Process()
+	ensureEmpty(t, test_stack.Recv())
 	simulate_rx(append([]byte{0x23}, payload[20:27]...))
-	stack.Process()
+	test_stack.Process()
 	assert_sent_flow_control(t, 5, 3, 0)
-	ensureEmpty(t, stack.Recv())
+	ensureEmpty(t, test_stack.Recv())
 	simulate_rx(append([]byte{0x24}, payload[27:30]...))
-	stack.Process()
-	compareStrings(t, stack.Recv(), payload, "TestLongMultiframeFlowControl")
-	ensureEmpty(t, stack.Recv())
+	test_stack.Process()
+	compareStrings(t, test_stack.Recv(), payload, "TestLongMultiframeFlowControl")
+	ensureEmpty(t, test_stack.Recv())
 }
 func TestMultiFrameBadSeqNum(t *testing.T) {
-	stack.Stmin = 0x02
-	stack.Blocksize = 0x05
+	test_stack.Stmin = 0x02
+	test_stack.Blocksize = 0x05
 	size := 10
 	payload := make_payload(size, 0)
 	simulate_rx(append([]byte{0x10, byte(size)}, payload[0:6]...))
 	simulate_rx(append([]byte{0x22}, payload[6:10]...))
-	stack.Process()
-	ensureEmpty(t, stack.Recv())
+	test_stack.Process()
+	ensureEmpty(t, test_stack.Recv())
 	_, ok := get_tx_can_msg()
 	if ok {
 		fmt.Println("get_tx_can_msg has msg")
@@ -161,34 +161,34 @@ func TestMultiFrameBadSeqNum(t *testing.T) {
 }
 
 func TestTimeoutFrameAfterFirst(t *testing.T) {
-	stack.rx_consecutive_frame_timeout = 200
-	stack.makeTimers()
+	test_stack.rx_consecutive_frame_timeout = 200
+	test_stack.makeTimers()
 	size := 10
 	payload := make_payload(size, 0)
 	simulate_rx(append([]byte{0x10, byte(size)}, payload[0:6]...))
-	stack.Process()
+	test_stack.Process()
 	time.Sleep(200 * time.Millisecond)
 	simulate_rx(append([]byte{0x21}, payload[6:10]...))
-	stack.Process()
-	ensureEmpty(t, stack.Recv())
+	test_stack.Process()
+	ensureEmpty(t, test_stack.Recv())
 }
 func TestRecoverTimeoutFrameAfterFirst(t *testing.T) {
-	stack.rx_consecutive_frame_timeout = 200
-	stack.makeTimers()
+	test_stack.rx_consecutive_frame_timeout = 200
+	test_stack.makeTimers()
 	size := 10
 	payload1 := make_payload(size, 0)
 	payload2 := make_payload(size, 1)
 	compareNotEqStrings(t, payload1, payload2, "TestRecoverTimeoutFrameAfterFirst")
 	simulate_rx(append([]byte{0x10, byte(size)}, payload1[0:6]...))
-	stack.Process()
+	test_stack.Process()
 	time.Sleep(200 * time.Millisecond)
 	simulate_rx(append([]byte{0x21}, payload1[6:10]...))
-	stack.Process()
-	ensureEmpty(t, stack.Recv())
+	test_stack.Process()
+	ensureEmpty(t, test_stack.Recv())
 	simulate_rx(append([]byte{0x10, byte(size)}, payload2[0:6]...))
 	simulate_rx(append([]byte{0x21}, payload2[6:10]...))
-	stack.Process()
-	compareStrings(t, stack.Recv(), payload2, "TestRecoverTimeoutFrameAfterFirst")
+	test_stack.Process()
+	compareStrings(t, test_stack.Recv(), payload2, "TestRecoverTimeoutFrameAfterFirst")
 }
 
 func TestReceive_multiframe_interrupting_another(t *testing.T)                {}
