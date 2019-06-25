@@ -12,7 +12,7 @@ type AnyConn interface {
 type IsotpConnection struct {
 	name  string
 	mtu   int
-	stack *Transport
+	Stack *Transport
 	rxfn  func() (Message, bool)
 	txfn  func(msg Message)
 }
@@ -21,7 +21,7 @@ func NewIsotpConnection(rx, tx int, rxfn func() (Message, bool),
 	txfn func(msg Message)) *IsotpConnection {
 	ic := IsotpConnection{}
 	a := NewAddress(rx, tx)
-	ic.stack = NewTransport(a, rxfn, txfn)
+	ic.Stack = NewTransport(a, rxfn, txfn)
 	ic.rxfn = rxfn
 	ic.txfn = txfn
 	return &ic
@@ -32,7 +32,7 @@ func (ic *IsotpConnection) Empty_rxqueue() {
 func (ic *IsotpConnection) Empty_txqueue() {
 }
 func (ic *IsotpConnection) Send(payload []byte) {
-	msg := NewMessage(ic.stack.address.rxid, payload)
+	msg := NewMessage(ic.Stack.address.rxid, payload)
 	ic.txfn(msg)
 }
 func (ic *IsotpConnection) Wait_frame() []byte {
