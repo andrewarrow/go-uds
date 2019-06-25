@@ -1,18 +1,22 @@
 package uds
 
 import "fmt"
+import "encoding/binary"
 
-func byteArrayWithZeros(data []byte) []byte {
+func convertIntArrayToByteArray(data []int) []byte {
+
 	buff := []byte{}
-	for _, b := range data {
-		buff = append(buff, 0, b)
+	for _, short := range data {
+		bs := make([]byte, 2)
+		binary.BigEndian.PutUint16(bs, uint16(short))
+		buff = append(buff, bs...)
 	}
 	return buff
 }
 
-func service_read_data_by_id_make_request(data []byte) *Request {
+func service_read_data_by_id_make_request(data []int) *Request {
 	r := NewRequest(0x22, "read_data_by_id")
-	r.data = byteArrayWithZeros(data)
+	r.data = convertIntArrayToByteArray(data)
 	r.use_subfunction = false
 	return r
 }
