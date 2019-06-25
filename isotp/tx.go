@@ -15,7 +15,7 @@ func (t *Transport) process_tx() (Message, bool) {
 }
 
 func (t *Transport) make_flow_control(status string) Message {
-	payload := craft_flow_control_data(status, t.blocksize, t.stmin)
+	payload := craft_flow_control_data(status, t.Blocksize, t.Stmin)
 	return t.make_tx_msg(t.address._get_tx_arbitraton_id(Physical), append(t.address.tx_payload_prefix, payload...))
 }
 

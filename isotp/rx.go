@@ -58,7 +58,7 @@ func (t *Transport) process_rx(msg Message) {
 					t.stop_receiving()
 				} else {
 					t.rx_block_counter += 1
-					if t.rx_block_counter%t.blocksize == 0 {
+					if t.rx_block_counter%t.Blocksize == 0 {
 						t.pending_flow_control_tx = true
 						t.timer_rx_cf.stop()
 					}

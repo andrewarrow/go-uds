@@ -26,8 +26,8 @@ type Transport struct {
 	rx_buffer                    []byte
 	pending_flow_control_tx      bool
 	last_flow_control_frame      *PDU
-	stmin                        int
-	blocksize                    int
+	Stmin                        int
+	Blocksize                    int
 	squash_stmin_requirement     bool
 	rx_flowcontrol_timeout       int
 	rx_consecutive_frame_timeout int
@@ -48,8 +48,8 @@ func NewTransport(a Address, rxfn func() (Message, bool), txfn func(m Message)) 
 	t.rx_state = IDLE
 	t.rx_buffer = []byte{}
 	t.rx_frame_length = 0
-	t.stmin = 1
-	t.blocksize = 8
+	t.Stmin = 1
+	t.Blocksize = 8
 	t.data_length = 8
 	t.rx_flowcontrol_timeout = 1000
 	t.rx_consecutive_frame_timeout = 1000

@@ -91,8 +91,8 @@ func TestTwoMultiFrame(t *testing.T) {
 	ensureEmpty(t, stack.Recv())
 }
 func TestMultiFrameFlowControl(t *testing.T) {
-	stack.stmin = 0x02
-	stack.blocksize = 0x05
+	stack.Stmin = 0x02
+	stack.Blocksize = 0x05
 	size := 10
 	payload := make_payload(size, 0)
 	simulate_rx(append([]byte{0x10, byte(size)}, payload[0:6]...))
@@ -105,8 +105,8 @@ func TestMultiFrameFlowControl(t *testing.T) {
 	ensureEmpty(t, stack.Recv())
 }
 func TestMultiFrameFlowControlPadding(t *testing.T) {
-	stack.stmin = 0x02
-	stack.blocksize = 0x05
+	stack.Stmin = 0x02
+	stack.Blocksize = 0x05
 	stack.tx_padding = 0x22
 	size := 10
 	payload := make_payload(size, 0)
@@ -122,8 +122,8 @@ func TestMultiFrameFlowControlPadding(t *testing.T) {
 func TestLongMultiframeFlowControl(t *testing.T) {
 	size := 30
 	payload := make_payload(size, 0)
-	stack.stmin = 0x05
-	stack.blocksize = 0x3
+	stack.Stmin = 0x05
+	stack.Blocksize = 0x3
 	stack.tx_padding = 0
 	simulate_rx(append([]byte{0x10, byte(size)}, payload[0:6]...))
 	stack.Process()
@@ -145,8 +145,8 @@ func TestLongMultiframeFlowControl(t *testing.T) {
 	ensureEmpty(t, stack.Recv())
 }
 func TestMultiFrameBadSeqNum(t *testing.T) {
-	stack.stmin = 0x02
-	stack.blocksize = 0x05
+	stack.Stmin = 0x02
+	stack.Blocksize = 0x05
 	size := 10
 	payload := make_payload(size, 0)
 	simulate_rx(append([]byte{0x10, byte(size)}, payload[0:6]...))
