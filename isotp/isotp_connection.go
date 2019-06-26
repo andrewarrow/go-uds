@@ -2,7 +2,7 @@ package isotp
 
 import "time"
 
-//import "fmt"
+import "fmt"
 import "container/list"
 
 type AnyConn interface {
@@ -21,7 +21,7 @@ type IsotpConnection struct {
 	txfn     func(msg Message)
 }
 
-func NewIsotpConnection(rx, tx int, rxfn func() (Message, bool),
+func NewIsotpConnection(rx, tx int64, rxfn func() (Message, bool),
 	txfn func(msg Message)) *IsotpConnection {
 	ic := IsotpConnection{}
 	a := NewAddress(rx, tx)
@@ -38,14 +38,16 @@ func (ic *IsotpConnection) Open() {
 		for {
 			msg, ok := ic.rxfn()
 			if ok {
+				fmt.Println(msg.ToBytes())
 				ic.rx_queue.PushBack(msg.ToBytes())
 			}
-			time.Sleep(20 * time.Millisecond)
+			time.Sleep(1 * time.Millisecond)
 		}
 	}()
 }
 
 func (ic *IsotpConnection) Empty_rxqueue() {
+	ic.rx_queue.Init()
 }
 func (ic *IsotpConnection) Empty_txqueue() {
 }

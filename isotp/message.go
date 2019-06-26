@@ -3,12 +3,12 @@ package isotp
 //import "fmt"
 
 type Message struct {
-	Id          int
+	Id          int64
 	Payload     []byte
 	extended_id bool
 }
 
-func NewMessage(id int, payload []byte) Message {
+func NewMessage(id int64, payload []byte) Message {
 	m := Message{}
 	m.Id = id
 	m.Payload = payload

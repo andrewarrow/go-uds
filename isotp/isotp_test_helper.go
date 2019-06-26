@@ -7,8 +7,8 @@ import "fmt"
 var test_rx_queue *list.List
 var test_tx_queue *list.List
 var test_stack *Transport
-var RXID int
-var TXID int
+var RXID int64
+var TXID int64
 
 func compareStrings(t *testing.T, a, b interface{}, msg string) {
 	as := fmt.Sprintf("%v", a)

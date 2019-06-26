@@ -14,15 +14,15 @@ const Functional = 1
 type Address struct {
 	rx_prefix_size    int
 	addressing_mode   int
-	txid              int
-	rxid              int
+	txid              int64
+	rxid              int64
 	target_address    int
 	source_address    int
 	address_extension int
 	tx_payload_prefix []byte
 }
 
-func NewAddress(rxid, txid int) Address {
+func NewAddress(rxid, txid int64) Address {
 	a := Address{}
 	a.tx_payload_prefix = []byte{}
 	a.addressing_mode = Normal_11bits
@@ -42,7 +42,7 @@ func (a Address) is_for_me(msg Message) bool {
 	return false
 }
 
-func (a Address) _get_tx_arbitraton_id(address_type int) int {
+func (a Address) _get_tx_arbitraton_id(address_type int) int64 {
 	if a.addressing_mode == Normal_11bits {
 		return a.txid
 	} else if a.addressing_mode == Normal_29bits {
@@ -52,7 +52,7 @@ func (a Address) _get_tx_arbitraton_id(address_type int) int {
 		if address_type == Physical {
 			bits23_16 = 0xDA0000
 		}
-		return 0x18000000 | bits23_16 | (a.target_address << 8) | a.source_address
+		return int64(0x18000000 | bits23_16 | (a.target_address << 8) | a.source_address)
 	} else if a.addressing_mode == Extended_11bits {
 		return a.txid
 	} else if a.addressing_mode == Extended_29bits {
@@ -64,7 +64,7 @@ func (a Address) _get_tx_arbitraton_id(address_type int) int {
 		if address_type == Physical {
 			bits23_16 = 0xCE0000
 		}
-		return 0x18000000 | bits23_16 | (a.target_address << 8) | a.source_address
+		return int64(0x18000000 | bits23_16 | (a.target_address << 8) | a.source_address)
 	}
 	return 0
 }
