@@ -91,27 +91,17 @@ func (t *Transport) start_reception_after_first_frame(frame PDU) {
 	fmt.Println("start_reception_after_first_frame", t.timer_rx_cf.startedAt)
 }
 
-func (t *Transport) Recv2() []byte {
-	a := []byte{}
-	for {
-		if t.rx_queue.Len() == 0 {
-			break
-		}
-		e := t.rx_queue.Front()
-		t.rx_queue.Remove(e)
-		a = append(a, e.Value.([]byte)...)
-	}
-	return a
+func (t *Transport) Send(data []byte) {
+	t.tx_queue.PushBack(data)
+	//self.tx_queue.put( {'data':data, 'target_address_type':target_address_type})    # frame is always an IsoTPFrame here
 }
 func (t *Transport) Recv() []byte {
-	a := []byte{}
 	if t.rx_queue.Len() == 0 {
-		return a
+		return []byte{}
 	}
 	e := t.rx_queue.Front()
 	t.rx_queue.Remove(e)
-	a = append(a, e.Value.([]byte)...)
-	return a
+	return e.Value.([]byte)
 }
 
 func (t *Transport) stop_receiving() {
@@ -120,4 +110,8 @@ func (t *Transport) stop_receiving() {
 	t.pending_flow_control_tx = false
 	t.last_flow_control_frame = nil
 	t.timer_rx_cf.stop()
+}
+
+func (t *Transport) available() bool {
+	return t.rx_queue.Len() > 0
 }
