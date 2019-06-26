@@ -11,6 +11,38 @@ func (t *Transport) process_tx() (Message, bool) {
 		t.pending_flow_control_tx = false
 		return t.make_flow_control(CONTINUE), true
 	}
+	if t.tx_state == IDLE {
+		read_tx_queue := true
+		for {
+			read_tx_queue = false
+			if t.tx_queue.Len() > 0 {
+				e := t.tx_queue.Front()
+				t.tx_queue.Remove(e)
+				payload := e.Value.([]byte)
+				if len(payload) == 0 {
+					read_tx_queue = true
+				} else {
+					t.tx_buffer = payload
+				}
+			}
+			if read_tx_queue == false {
+				break
+			}
+		}
+		//msg_data  = self.address.tx_payload_prefix + bytearray([0x0 | len(self.tx_buffer)]) + self.tx_buffer
+		msg_data := append([]byte{byte(0x0 | len(t.tx_buffer))}, t.tx_buffer...)
+		m = t.make_tx_msg(t.address.txid, msg_data)
+		return m, true
+	}
+
+	/*
+		if len(self.tx_buffer) <= self.params.ll_data_length-1-len(self.address.tx_payload_prefix):
+		  msg_data  = self.address.tx_payload_prefix + bytearray([0x0 | len(self.tx_buffer)]) + self.tx_buffer
+		  print("here1", msg_data)
+		  arbitration_id  = self.address.get_tx_arbitraton_id(popped_object['target_address_type'])
+		  output_msg              = self.make_tx_msg(arbitration_id, msg_data)
+
+	*/
 	return m, false
 }
 

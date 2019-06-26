@@ -20,6 +20,7 @@ type Transport struct {
 	tx_queue                     *list.List
 	address                      Address
 	rx_state                     string
+	tx_state                     string
 	last_seqnum                  int
 	rx_block_counter             int
 	rx_frame_length              int
@@ -36,6 +37,7 @@ type Transport struct {
 	timer_rx_cf                  *Timer
 	timer_rx_fc                  *Timer
 	tx_padding                   int
+	tx_buffer                    []byte
 }
 
 func NewTransport(a Address, rxfn func() (Message, bool), txfn func(m Message)) *Transport {
@@ -45,6 +47,7 @@ func NewTransport(a Address, rxfn func() (Message, bool), txfn func(m Message)) 
 	t.rx_queue = list.New()
 	t.tx_queue = list.New()
 	t.address = a
+	t.rx_state = IDLE
 	t.rx_state = IDLE
 	t.rx_buffer = []byte{}
 	t.rx_frame_length = 0
