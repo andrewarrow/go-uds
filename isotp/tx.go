@@ -6,31 +6,19 @@ func (t *Transport) process_tx() (Message, bool) {
 	m := Message{}
 	//output_msg := false
 
-	//fmt.Println("calling process_tx ", t.pending_flow_control_tx)
 	if t.pending_flow_control_tx {
 		t.pending_flow_control_tx = false
 		return t.make_flow_control(CONTINUE), true
 	}
 	if t.tx_state == IDLE {
-		read_tx_queue := true
-		for {
-			read_tx_queue = false
-			if t.tx_queue.Len() > 0 {
-				payload := t.tx_queue.Get()
-				if len(payload) == 0 {
-					read_tx_queue = true
-				} else {
-					t.tx_buffer = payload
-				}
-			}
-			if read_tx_queue == false {
-				break
-			}
+		if t.tx_queue.Len() > 0 {
+			payload := t.tx_queue.Get()
+			t.tx_buffer = payload
+			//msg_data  = self.address.tx_payload_prefix + bytearray([0x0 | len(self.tx_buffer)]) + self.tx_buffer
+			msg_data := append([]byte{byte(0x0 | len(t.tx_buffer))}, t.tx_buffer...)
+			m = t.make_tx_msg(t.address.txid, msg_data)
+			return m, true
 		}
-		//msg_data  = self.address.tx_payload_prefix + bytearray([0x0 | len(self.tx_buffer)]) + self.tx_buffer
-		msg_data := append([]byte{byte(0x0 | len(t.tx_buffer))}, t.tx_buffer...)
-		m = t.make_tx_msg(t.address.txid, msg_data)
-		return m, true
 	}
 
 	/*

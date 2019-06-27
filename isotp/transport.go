@@ -2,7 +2,7 @@ package isotp
 
 import "github.com/andrewarrow/go-uds/util"
 
-//import "fmt"
+import "fmt"
 
 const FLOW = "FLOW"
 const WAIT = "WAIT"
@@ -49,7 +49,7 @@ func NewTransport(a Address, rxfn func() (Message, bool), txfn func(m Message)) 
 	t.tx_queue = util.NewQueue()
 	t.address = a
 	t.rx_state = IDLE
-	t.rx_state = IDLE
+	t.tx_state = IDLE
 	t.rx_buffer = []byte{}
 	t.rx_frame_length = 0
 	t.Stmin = 1
@@ -85,6 +85,7 @@ func (t *Transport) Process() {
 		if ok == false {
 			break
 		}
+		fmt.Println(" O", msg)
 		t.txfn(msg)
 	}
 }

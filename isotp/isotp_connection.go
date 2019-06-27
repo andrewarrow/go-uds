@@ -2,7 +2,7 @@ package isotp
 
 import "time"
 
-//import "fmt"
+import "fmt"
 import "github.com/andrewarrow/go-uds/util"
 
 type AnyConn interface {
@@ -37,6 +37,7 @@ func NewIsotpConnection(rx, tx int64, rxfn func() (Message, bool),
 func (ic *IsotpConnection) Open() {
 	go func() {
 		for {
+			fmt.Println("  [ml] toIsoTP")
 			for {
 				if ic.toIsoTPQueue.Len() == 0 {
 					break
@@ -47,20 +48,18 @@ func (ic *IsotpConnection) Open() {
 
 			ic.Stack.Process()
 
+			fmt.Println("  [ml] fromIsoTP")
 			for {
 				if ic.Stack.available() == false {
 					break
 				}
 				ic.fromIsoTPQueue.Put(ic.Stack.Recv())
 			}
+			fmt.Println("  [ml] sleep")
+			time.Sleep(time.Second * 1)
 		}
 	}()
 }
-
-/*
-   time.sleep(self.isotp_layer.sleep_time())
-
-*/
 
 func (ic *IsotpConnection) Empty_rxqueue() {
 	ic.fromIsoTPQueue.Clear()
