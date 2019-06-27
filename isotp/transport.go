@@ -1,7 +1,8 @@
 package isotp
 
-import "container/list"
-import "fmt"
+import "github.com/andrewarrow/go-uds/util"
+
+//import "fmt"
 
 const FLOW = "FLOW"
 const WAIT = "WAIT"
@@ -16,8 +17,8 @@ const CONSECUTIVE = "CONSECUTIVE"
 type Transport struct {
 	rxfn                         func() (Message, bool)
 	txfn                         func(m Message)
-	rx_queue                     *list.List
-	tx_queue                     *list.List
+	rx_queue                     *util.Queue
+	tx_queue                     *util.Queue
 	address                      Address
 	rx_state                     string
 	tx_state                     string
@@ -44,8 +45,8 @@ func NewTransport(a Address, rxfn func() (Message, bool), txfn func(m Message)) 
 	t := Transport{}
 	t.rxfn = rxfn
 	t.txfn = txfn
-	t.rx_queue = list.New()
-	t.tx_queue = list.New()
+	t.rx_queue = util.NewQueue()
+	t.tx_queue = util.NewQueue()
 	t.address = a
 	t.rx_state = IDLE
 	t.rx_state = IDLE
@@ -79,7 +80,6 @@ func (t *Transport) Process() {
 		}
 	}
 
-	fmt.Println("grrrrrr")
 	for {
 		msg, ok := t.process_tx()
 		if ok == false {
@@ -102,16 +102,14 @@ func (t *Transport) start_reception_after_first_frame(frame PDU) {
 }
 
 func (t *Transport) Send(data []byte) {
-	t.tx_queue.PushBack(data)
+	t.tx_queue.Put(data)
 	//self.tx_queue.put( {'data':data, 'target_address_type':target_address_type})    # frame is always an IsoTPFrame here
 }
 func (t *Transport) Recv() []byte {
 	if t.rx_queue.Len() == 0 {
 		return []byte{}
 	}
-	e := t.rx_queue.Front()
-	t.rx_queue.Remove(e)
-	return e.Value.([]byte)
+	return t.rx_queue.Get()
 }
 
 func (t *Transport) stop_receiving() {

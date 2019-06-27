@@ -26,7 +26,7 @@ func (t *Transport) process_rx(msg Message) {
 		t.rx_frame_length = 0
 		t.timer_rx_cf.stop()
 		if pdu.flavor == SINGLE && pdu.length > 0 {
-			t.rx_queue.PushBack(pdu.payload)
+			t.rx_queue.Put(pdu.payload)
 		} else if pdu.flavor == FIRST {
 			t.start_reception_after_first_frame(pdu)
 		} else if pdu.flavor == CONSECUTIVE {
@@ -34,7 +34,7 @@ func (t *Transport) process_rx(msg Message) {
 		}
 	} else if t.rx_state == WAIT {
 		if pdu.flavor == SINGLE && pdu.length > 0 {
-			t.rx_queue.PushBack(pdu.payload)
+			t.rx_queue.Put(pdu.payload)
 			t.rx_state = IDLE
 			fmt.Println("Reception of IsoTP frame interrupted with a new SingleFrame")
 		} else if pdu.flavor == FIRST {
@@ -54,7 +54,7 @@ func (t *Transport) process_rx(msg Message) {
 					t.rx_buffer = append(t.rx_buffer, pdu.payload...)
 				}
 				if len(t.rx_buffer) >= t.rx_frame_length {
-					t.rx_queue.PushBack(append([]byte{}, t.rx_buffer...))
+					t.rx_queue.Put(append([]byte{}, t.rx_buffer...))
 					t.stop_receiving()
 				} else {
 					t.rx_block_counter += 1

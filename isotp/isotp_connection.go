@@ -3,7 +3,7 @@ package isotp
 import "time"
 
 //import "fmt"
-import "container/list"
+import "github.com/andrewarrow/go-uds/util"
 
 type AnyConn interface {
 	Empty_rxqueue()
@@ -15,8 +15,8 @@ type AnyConn interface {
 type IsotpConnection struct {
 	name           string
 	mtu            int
-	fromIsoTPQueue *list.List
-	toIsoTPQueue   *list.List
+	fromIsoTPQueue *util.Queue
+	toIsoTPQueue   *util.Queue
 	Stack          *Transport
 	rxfn           func() (Message, bool)
 	txfn           func(msg Message)
@@ -29,8 +29,8 @@ func NewIsotpConnection(rx, tx int64, rxfn func() (Message, bool),
 	ic.Stack = NewTransport(a, rxfn, txfn)
 	ic.rxfn = rxfn
 	ic.txfn = txfn
-	ic.fromIsoTPQueue = list.New()
-	ic.toIsoTPQueue = list.New()
+	ic.fromIsoTPQueue = util.NewQueue()
+	ic.toIsoTPQueue = util.NewQueue()
 	return &ic
 }
 
@@ -41,9 +41,7 @@ func (ic *IsotpConnection) Open() {
 				if ic.toIsoTPQueue.Len() == 0 {
 					break
 				}
-				e := ic.toIsoTPQueue.Front()
-				ic.toIsoTPQueue.Remove(e)
-				payload := e.Value.([]byte)
+				payload := ic.toIsoTPQueue.Get()
 				ic.Stack.Send(payload)
 			}
 
@@ -53,7 +51,7 @@ func (ic *IsotpConnection) Open() {
 				if ic.Stack.available() == false {
 					break
 				}
-				ic.fromIsoTPQueue.PushBack(ic.Stack.Recv())
+				ic.fromIsoTPQueue.Put(ic.Stack.Recv())
 			}
 		}
 	}()
@@ -65,23 +63,21 @@ func (ic *IsotpConnection) Open() {
 */
 
 func (ic *IsotpConnection) Empty_rxqueue() {
-	ic.fromIsoTPQueue.Init()
+	ic.fromIsoTPQueue.Clear()
 }
 func (ic *IsotpConnection) Empty_txqueue() {
-	ic.toIsoTPQueue.Init()
+	ic.toIsoTPQueue.Clear()
 }
 func (ic *IsotpConnection) Send(payload []byte) {
 	//msg := NewMessage(ic.Stack.address.rxid, payload)
-	ic.toIsoTPQueue.PushBack(payload)
+	ic.toIsoTPQueue.Put(payload)
 }
 func (ic *IsotpConnection) Wait_frame() []byte {
 
 	count := 0
 	for {
 		if ic.fromIsoTPQueue.Len() > 0 {
-			e := ic.fromIsoTPQueue.Front()
-			ic.fromIsoTPQueue.Remove(e)
-			m := e.Value.([]byte)
+			m := ic.fromIsoTPQueue.Get()
 			return m
 		}
 		time.Sleep(1 * time.Millisecond)

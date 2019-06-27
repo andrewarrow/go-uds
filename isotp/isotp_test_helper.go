@@ -1,11 +1,11 @@
 package isotp
 
 import "testing"
-import "container/list"
+import "github.com/andrewarrow/go-uds/util"
 import "fmt"
 
-var test_rx_queue *list.List
-var test_tx_queue *list.List
+var test_rx_queue *util.InterfaceQueue
+var test_tx_queue *util.InterfaceQueue
 var test_stack *Transport
 var RXID int64
 var TXID int64
@@ -41,7 +41,7 @@ func make_payload(size, start_val int) []byte {
 }
 
 func simulate_rx(b []byte) {
-	test_rx_queue.PushBack(NewMessage(RXID, b))
+	test_rx_queue.Put(NewMessage(RXID, b))
 }
 func ensureEmpty(t *testing.T, b []byte) {
 	if len(b) != 0 {
@@ -71,20 +71,18 @@ func assert_sent_flow_control(t *testing.T, stmin, blocksize, tx_padding int) {
 
 func stack_rxfn() (Message, bool) {
 	if test_rx_queue.Len() > 0 {
-		e := test_rx_queue.Front()
-		test_rx_queue.Remove(e)
-		return e.Value.(Message), true
+		e := test_rx_queue.Get()
+		return e.(Message), true
 	}
 	return Message{}, false
 }
 func get_tx_can_msg() (Message, bool) {
 	if test_tx_queue.Len() > 0 {
-		e := test_tx_queue.Front()
-		test_tx_queue.Remove(e)
-		return e.Value.(Message), true
+		e := test_tx_queue.Get()
+		return e.(Message), true
 	}
 	return Message{}, false
 }
 func stack_txfn(m Message) {
-	test_tx_queue.PushBack(m)
+	test_tx_queue.Put(m)
 }

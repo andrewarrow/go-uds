@@ -2,16 +2,15 @@ package isotp
 
 import "testing"
 import "os"
-import "container/list"
 import "time"
-
+import "github.com/andrewarrow/go-uds/util"
 import "fmt"
 
 func TestMain(m *testing.M) {
 	RXID = 0x456
 	TXID = 0x123
-	test_rx_queue = list.New()
-	test_tx_queue = list.New()
+	test_rx_queue = util.NewInterfaceQueue()
+	test_tx_queue = util.NewInterfaceQueue()
 	a := NewAddress(RXID, TXID)
 	test_stack = NewTransport(a, stack_rxfn, stack_txfn)
 	os.Exit(m.Run())
@@ -19,7 +18,7 @@ func TestMain(m *testing.M) {
 func TestSingleFrame(t *testing.T) {
 	a := []byte{0x05, 0x11, 0x22, 0x33, 0x44, 0x55}
 	msg := NewMessage(RXID, a)
-	test_rx_queue.PushBack(msg)
+	test_rx_queue.Put(msg)
 	test_stack.Process()
 	compareStrings(t, test_stack.Recv(), a[1:], "")
 }
@@ -29,7 +28,7 @@ func TestMultiSingleFrame(t *testing.T) {
 	test_stack.Process()
 	a := []byte{0x05, 0x11, 0x22, 0x33, 0x44, 0x55}
 	msg := NewMessage(RXID, a)
-	test_rx_queue.PushBack(msg)
+	test_rx_queue.Put(msg)
 	test_stack.Process()
 	compareStrings(t, test_stack.Recv(), a[1:], "")
 
@@ -43,7 +42,7 @@ func TestMultiSingleFrame(t *testing.T) {
 
 	b := []byte{0x05, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE}
 	msg = NewMessage(RXID, b)
-	test_rx_queue.PushBack(msg)
+	test_rx_queue.Put(msg)
 	test_stack.Process()
 	compareStrings(t, test_stack.Recv(), b[1:], "")
 	if len(test_stack.Recv()) != 0 {
@@ -58,8 +57,8 @@ func TestMultiSingleFrame(t *testing.T) {
 func TestMultipleSingleProcess(t *testing.T) {
 	a := []byte{0x05, 0x11, 0x22, 0x33, 0x44, 0x55}
 	b := []byte{0x05, 0xAA, 0xBB, 0xCC, 0xDD, 0xEE}
-	test_rx_queue.PushBack(NewMessage(RXID, a))
-	test_rx_queue.PushBack(NewMessage(RXID, b))
+	test_rx_queue.Put(NewMessage(RXID, a))
+	test_rx_queue.Put(NewMessage(RXID, b))
 	test_stack.Process()
 	compareStrings(t, test_stack.Recv(), a[1:], "")
 	compareStrings(t, test_stack.Recv(), b[1:], "")

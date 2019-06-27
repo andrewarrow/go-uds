@@ -16,9 +16,7 @@ func (t *Transport) process_tx() (Message, bool) {
 		for {
 			read_tx_queue = false
 			if t.tx_queue.Len() > 0 {
-				e := t.tx_queue.Front()
-				t.tx_queue.Remove(e)
-				payload := e.Value.([]byte)
+				payload := t.tx_queue.Get()
 				if len(payload) == 0 {
 					read_tx_queue = true
 				} else {
