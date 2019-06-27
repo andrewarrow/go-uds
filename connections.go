@@ -1,17 +1,17 @@
 package uds
 
-import "container/list"
 import "time"
 
 //import "fmt"
+import "github.com/andrewarrow/go-uds/util"
 import "sync"
 
 type QueueConnection struct {
 	name      string
 	mtu       int
-	fromuser  *list.List
+	fromuser  *util.Queue
 	fromuserm sync.Mutex
-	touser    *list.List
+	touser    *util.Queue
 	touserm   sync.Mutex
 }
 
@@ -19,35 +19,33 @@ func NewQueueConnection(name string, mtu int) *QueueConnection {
 	q := QueueConnection{}
 	q.name = name
 	q.mtu = mtu
-	q.fromuser = list.New()
-	q.touser = list.New()
+	q.fromuser = util.NewQueue()
+	q.touser = util.NewQueue()
 	return &q
 }
 
 func (q *QueueConnection) Empty_rxqueue() {
 	q.fromuserm.Lock()
 	defer q.fromuserm.Unlock()
-	q.fromuser.Init()
+	q.fromuser.Clear()
 }
 func (q *QueueConnection) Empty_txqueue() {
 	q.touserm.Lock()
 	defer q.touserm.Unlock()
-	q.touser.Init()
+	q.touser.Clear()
 }
 func (q *QueueConnection) Send(payload []byte) {
 	//fmt.Printf("                      sending to touser %v\n", payload)
 	q.touserm.Lock()
 	defer q.touserm.Unlock()
-	q.touser.PushBack(payload)
+	q.touser.Put(payload)
 }
 func (q *QueueConnection) touser_frame() []byte {
 	for {
 		q.touserm.Lock()
 		if q.touser.Len() > 0 {
-			e := q.touser.Front()
-			q.touser.Remove(e)
+			val := q.touser.Get()
 			q.touserm.Unlock()
-			val := e.Value.([]byte)
 			//fmt.Printf("                     reading from touser %v\n", val)
 			return val
 		}
@@ -60,10 +58,8 @@ func (q *QueueConnection) Wait_frame() []byte {
 	for {
 		q.fromuserm.Lock()
 		if q.fromuser.Len() > 0 {
-			e := q.fromuser.Front()
-			q.fromuser.Remove(e)
+			val := q.fromuser.Get()
 			q.fromuserm.Unlock()
-			val := e.Value.([]byte)
 			//fmt.Printf("                     reading from fromuser %v\n", val)
 			return val
 		}

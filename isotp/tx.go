@@ -1,12 +1,12 @@
 package isotp
 
-import "fmt"
+//import "fmt"
 
 func (t *Transport) process_tx() (Message, bool) {
 	m := Message{}
 	//output_msg := false
 
-	fmt.Println("calling process_tx ", t.pending_flow_control_tx)
+	//fmt.Println("calling process_tx ", t.pending_flow_control_tx)
 	if t.pending_flow_control_tx {
 		t.pending_flow_control_tx = false
 		return t.make_flow_control(CONTINUE), true

@@ -66,13 +66,20 @@ func (t *Transport) makeTimers() {
 }
 
 func (t *Transport) Process() {
+	i := 0
 	for {
 		msg, ok := t.rxfn()
 		if ok == false {
 			break
 		}
 		t.process_rx(msg)
+		i++
+		if i > 50 {
+			break
+		}
 	}
+
+	fmt.Println("grrrrrr")
 	for {
 		msg, ok := t.process_tx()
 		if ok == false {
@@ -89,9 +96,9 @@ func (t *Transport) start_reception_after_first_frame(frame PDU) {
 	t.rx_state = WAIT
 	t.rx_buffer = append([]byte{}, frame.payload...)
 	t.pending_flow_control_tx = true
-	fmt.Println("start_reception_after_first_frame", t.timer_rx_cf.startedAt)
+	//fmt.Println("start_reception_after_first_frame", t.timer_rx_cf.startedAt)
 	t.timer_rx_cf.start()
-	fmt.Println("start_reception_after_first_frame", t.timer_rx_cf.startedAt)
+	//fmt.Println("start_reception_after_first_frame", t.timer_rx_cf.startedAt)
 }
 
 func (t *Transport) Send(data []byte) {

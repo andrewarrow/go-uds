@@ -36,10 +36,10 @@ func NewAddress(rxid, txid int64) Address {
 }
 
 func (a Address) is_for_me(msg Message) bool {
-	if a.is_29bits() == msg.extended_id {
-		return msg.Id == a.rxid
-	}
-	return false
+	//if a.is_29bits() == msg.extended_id {
+	//return msg.Id == a.rxid
+	//}
+	return true
 }
 
 func (a Address) _get_tx_arbitraton_id(address_type int) int64 {

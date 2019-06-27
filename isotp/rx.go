@@ -6,8 +6,8 @@ func (t *Transport) process_rx(msg Message) {
 	if t.address.is_for_me(msg) == false {
 		return
 	}
+	//fmt.Println("calling process_rx ", msg)
 	pdu := NewPDU(msg, t.address.rx_prefix_size, t.data_length)
-	fmt.Println("calling process_rx ", pdu)
 	if t.timer_rx_cf.is_timed_out() {
 		fmt.Println("Reception of CONSECUTIVE_FRAME timed out.")
 		t.stop_receiving()
@@ -39,7 +39,7 @@ func (t *Transport) process_rx(msg Message) {
 			fmt.Println("Reception of IsoTP frame interrupted with a new SingleFrame")
 		} else if pdu.flavor == FIRST {
 			t.start_reception_after_first_frame(pdu)
-			fmt.Println("Reception of IsoTP frame interrupted with a new FirstFrame")
+			//fmt.Println("Reception of IsoTP frame interrupted with a new FirstFrame")
 		} else if pdu.flavor == CONSECUTIVE {
 			t.timer_rx_cf.start()
 			expected_seqnum := (t.last_seqnum + 1) & 0xF

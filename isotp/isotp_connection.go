@@ -37,22 +37,24 @@ func NewIsotpConnection(rx, tx int64, rxfn func() (Message, bool),
 func (ic *IsotpConnection) Open() {
 	go func() {
 		for {
-			if ic.toIsoTPQueue.Len() == 0 {
-				break
+			for {
+				if ic.toIsoTPQueue.Len() == 0 {
+					break
+				}
+				e := ic.toIsoTPQueue.Front()
+				ic.toIsoTPQueue.Remove(e)
+				payload := e.Value.([]byte)
+				ic.Stack.Send(payload)
 			}
-			e := ic.toIsoTPQueue.Front()
-			ic.toIsoTPQueue.Remove(e)
-			payload := e.Value.([]byte)
-			ic.Stack.Send(payload)
-		}
 
-		ic.Stack.Process()
+			ic.Stack.Process()
 
-		for {
-			if ic.Stack.available() == false {
-				break
+			for {
+				if ic.Stack.available() == false {
+					break
+				}
+				ic.fromIsoTPQueue.PushBack(ic.Stack.Recv())
 			}
-			ic.fromIsoTPQueue.PushBack(ic.Stack.Recv())
 		}
 	}()
 }
