@@ -2,7 +2,7 @@ package isotp
 
 import "github.com/andrewarrow/go-uds/util"
 
-import "fmt"
+//import "fmt"
 
 const FLOW = "FLOW"
 const WAIT = "WAIT"
@@ -85,7 +85,6 @@ func (t *Transport) Process() {
 		if ok == false {
 			break
 		}
-		fmt.Println(" O", msg)
 		t.txfn(msg)
 	}
 }

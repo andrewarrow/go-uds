@@ -53,7 +53,8 @@ func (ic *IsotpConnection) Open() {
 				if ic.Stack.available() == false {
 					break
 				}
-				ic.fromIsoTPQueue.Put(ic.Stack.Recv())
+				stuff := ic.Stack.Recv()
+				ic.fromIsoTPQueue.Put(stuff)
 			}
 			fmt.Println("  [ml] sleep")
 			time.Sleep(time.Second * 1)

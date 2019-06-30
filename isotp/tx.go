@@ -1,6 +1,6 @@
 package isotp
 
-//import "fmt"
+import "fmt"
 
 func (t *Transport) process_tx() (Message, bool) {
 	m := Message{}
@@ -8,6 +8,7 @@ func (t *Transport) process_tx() (Message, bool) {
 
 	if t.pending_flow_control_tx {
 		t.pending_flow_control_tx = false
+		fmt.Println("FC")
 		return t.make_flow_control(CONTINUE), true
 	}
 	if t.tx_state == IDLE {
@@ -17,6 +18,7 @@ func (t *Transport) process_tx() (Message, bool) {
 			//msg_data  = self.address.tx_payload_prefix + bytearray([0x0 | len(self.tx_buffer)]) + self.tx_buffer
 			msg_data := append([]byte{byte(0x0 | len(t.tx_buffer))}, t.tx_buffer...)
 			m = t.make_tx_msg(t.address.txid, msg_data)
+			fmt.Println("NORMAL")
 			return m, true
 		}
 	}
