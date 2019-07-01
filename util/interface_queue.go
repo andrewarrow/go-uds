@@ -2,6 +2,8 @@ package util
 
 import "container/list"
 
+//import "fmt"
+
 type InterfaceQueue struct {
 	data *list.List
 }

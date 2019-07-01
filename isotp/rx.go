@@ -7,7 +7,7 @@ func (t *Transport) process_rx(msg Message) {
 		//	fmt.Println("ID", msg.Id)
 		return
 	}
-	fmt.Println("calling process_rx ", msg)
+	//fmt.Println("calling process_rx ", msg)
 	pdu := NewPDU(msg, t.address.rx_prefix_size, t.data_length)
 	if t.timer_rx_cf.is_timed_out() {
 		fmt.Println("Reception of CONSECUTIVE_FRAME timed out.")
@@ -40,7 +40,7 @@ func (t *Transport) process_rx(msg Message) {
 			fmt.Println("Reception of IsoTP frame interrupted with a new SingleFrame")
 		} else if pdu.flavor == FIRST {
 			t.start_reception_after_first_frame(pdu)
-			//fmt.Println("Reception of IsoTP frame interrupted with a new FirstFrame")
+			fmt.Println("Reception of IsoTP frame interrupted with a new FirstFrame")
 		} else if pdu.flavor == CONSECUTIVE {
 			t.timer_rx_cf.start()
 			expected_seqnum := (t.last_seqnum + 1) & 0xF
@@ -48,18 +48,19 @@ func (t *Transport) process_rx(msg Message) {
 				t.last_seqnum = pdu.seqnum
 
 				bytes_to_receive := (t.rx_frame_length - len(t.rx_buffer))
-
+				//in python they do t.rx_buffer = append(t.rx_buffer, pdu.payload[:bytes_to_receive]...)
 				if len(pdu.payload) > bytes_to_receive {
 					t.rx_buffer = append(t.rx_buffer, pdu.payload[0:bytes_to_receive]...)
 				} else {
 					t.rx_buffer = append(t.rx_buffer, pdu.payload...)
 				}
+
 				if len(t.rx_buffer) >= t.rx_frame_length {
 					t.rx_queue.Put(append([]byte{}, t.rx_buffer...))
 					t.stop_receiving()
 				} else {
 					t.rx_block_counter += 1
-					if t.rx_block_counter%t.Blocksize == 0 {
+					if (t.Blocksize > 0) && (t.rx_block_counter%t.Blocksize == 0) {
 						t.pending_flow_control_tx = true
 						t.timer_rx_cf.stop()
 					}

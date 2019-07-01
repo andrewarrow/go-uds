@@ -48,11 +48,24 @@ func NewPDU(msg Message, start_of_data int, data_length int) PDU {
 		}
 	}
 	if pdu.flavor == SINGLE {
-		pdu.length = int(msg.Payload[start_of_data]) & 0xF
-		pdu.payload = msg.Payload[0+start_of_data : len(msg.Payload)][1 : pdu.length+1]
+		lp := int(msg.Payload[start_of_data]) & 0xF
+		if lp != 0 {
+			pdu.length = lp
+			pdu.payload = msg.Payload[1+start_of_data:][:lp]
+		} else {
+			pdu.length = int(msg.Payload[start_of_data+1])
+			pdu.payload = msg.Payload[2+start_of_data:][:pdu.length]
+		}
 	} else if pdu.flavor == FIRST {
-		pdu.length = ((int(msg.Payload[start_of_data]) & 0xF) << 8) | int(msg.Payload[start_of_data+1])
-		pdu.payload = msg.Payload[2+start_of_data : len(msg.Payload)][0:min(pdu.length, data_length-2-start_of_data)]
+		lp := ((int(msg.Payload[start_of_data]) & 0xF) << 8) | int(msg.Payload[start_of_data+1])
+		if lp != 0 {
+			pdu.length = lp
+			pdu.payload = msg.Payload[2+start_of_data:][:min(lp, data_length-2-start_of_data)]
+		} else {
+			data_temp := msg.Payload[start_of_data:]
+			pdu.length = int((data_temp[2] << 24) | (data_temp[3] << 16) | (data_temp[4] << 8) | (data_temp[5] << 0))
+			pdu.payload = msg.Payload[6+start_of_data:][:min(pdu.length, data_length-6-start_of_data)]
+		}
 	} else if pdu.flavor == CONSECUTIVE {
 		pdu.seqnum = int(msg.Payload[start_of_data]) & 0xF
 		pdu.payload = msg.Payload[start_of_data+1 : data_length]

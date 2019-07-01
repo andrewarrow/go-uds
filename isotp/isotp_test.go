@@ -2,9 +2,11 @@ package isotp
 
 import "testing"
 import "os"
-import "time"
+
+//import "time"
 import "github.com/andrewarrow/go-uds/util"
-import "fmt"
+
+//import "fmt"
 
 func TestMain(m *testing.M) {
 	RXID = 0x456
@@ -74,9 +76,22 @@ func TestMultiFrame(t *testing.T) {
 	simulate_rx(append([]byte{0x21}, payload[6:10]...))
 
 	test_stack.Process()
-	compareStrings(t, test_stack.Recv(), payload, "")
+	eq(t, test_stack.Recv(), payload)
 	ensureEmpty(t, test_stack.Recv())
 }
+func TestReceive_multiframe_interrupting_another(t *testing.T) {
+	size := 10
+	payload1 := make_payload(size, 0)
+	payload2 := make_payload(size, 1)
+	simulate_rx(append([]byte{0x10, byte(size)}, payload1[0:6]...))
+	simulate_rx(append([]byte{0x10, byte(size)}, payload2[0:6]...))
+	simulate_rx(append([]byte{0x21, byte(size)}, payload2[6:10]...))
+	test_stack.Process()
+	eq(t, test_stack.Recv(), payload2)
+	ensureEmpty(t, test_stack.Recv())
+}
+
+/*
 func TestTwoMultiFrame(t *testing.T) {
 	size := 10
 	payload := make_payload(size, 0)
@@ -190,7 +205,6 @@ func TestRecoverTimeoutFrameAfterFirst(t *testing.T) {
 	compareStrings(t, test_stack.Recv(), payload2, "TestRecoverTimeoutFrameAfterFirst")
 }
 
-func TestReceive_multiframe_interrupting_another(t *testing.T)                {}
 func TestReceive_single_frame_interrupt_multiframe_then_recover(t *testing.T) {}
 func TestReceive_4095_multiframe(t *testing.T)                                {}
 func TestReceive_4095_multiframe_check_blocksize(t *testing.T)                {}
@@ -223,3 +237,4 @@ func TestSend_single_frame_after_empty_payload(t *testing.T)                  {}
 func TestSend_blocksize_zero(t *testing.T)                                    {}
 func TestTransmit_data_length_12_bytes(t *testing.T)                          {}
 func TestTransmit_data_length_5_bytes(t *testing.T)                           {}
+*/
