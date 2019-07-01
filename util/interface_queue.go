@@ -2,7 +2,7 @@ package util
 
 import "container/list"
 
-//import "fmt"
+import "fmt"
 
 type InterfaceQueue struct {
 	data *list.List
@@ -34,4 +34,7 @@ func (q *InterfaceQueue) Get() interface{} {
 }
 func (q *InterfaceQueue) Put(b interface{}) {
 	q.data.PushBack(b)
+}
+func (q *InterfaceQueue) String() string {
+	return fmt.Sprintf("%v", q.data.Front())
 }

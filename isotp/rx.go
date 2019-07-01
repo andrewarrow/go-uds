@@ -9,6 +9,7 @@ func (t *Transport) process_rx(msg Message) {
 	}
 	//fmt.Println("calling process_rx ", msg)
 	pdu := NewPDU(msg, t.address.rx_prefix_size, t.data_length)
+	//fmt.Println(pdu.flavor)
 	if t.timer_rx_cf.is_timed_out() {
 		fmt.Println("Reception of CONSECUTIVE_FRAME timed out.")
 		t.stop_receiving()

@@ -9,8 +9,8 @@ import "github.com/andrewarrow/go-uds/util"
 import "fmt"
 
 func TestMain(m *testing.M) {
-	RXID = 0x456
-	TXID = 0x123
+	RXID = 701
+	TXID = 702
 	test_rx_queue = util.NewInterfaceQueue()
 	test_tx_queue = util.NewInterfaceQueue()
 	a := NewAddress(RXID, TXID)
@@ -272,6 +272,7 @@ func TestSend_4095_multiframe_zero_stmin(t *testing.T)                  {}
 func TestSend_128_multiframe_variable_blocksize(t *testing.T)           {}
 func TestSquash_timing_requirement(t *testing.T)                        {}
 func TestStmin_requirement(t *testing.T) {
+	test_tx_queue = util.NewInterfaceQueue()
 	test_stack.Stmin = 100
 	size := 30
 	test_stack.Blocksize = 3
