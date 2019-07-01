@@ -25,6 +25,7 @@ type Transport struct {
 	last_seqnum                  int
 	rx_block_counter             int
 	rx_frame_length              int
+	tx_frame_length              int
 	rx_buffer                    []byte
 	pending_flow_control_tx      bool
 	last_flow_control_frame      *PDU
@@ -37,8 +38,13 @@ type Transport struct {
 	data_length                  int
 	timer_rx_cf                  *Timer
 	timer_rx_fc                  *Timer
+	timer_tx_stmin               *Timer
 	tx_padding                   int
 	tx_buffer                    []byte
+	remote_blocksize             int
+	tx_block_counter             int
+	tx_seqnum                    int
+	wft_counter                  int
 }
 
 func NewTransport(a Address, rxfn func() (Message, bool), txfn func(m Message)) *Transport {
@@ -118,6 +124,17 @@ func (t *Transport) stop_receiving() {
 	t.pending_flow_control_tx = false
 	t.last_flow_control_frame = nil
 	t.timer_rx_cf.stop()
+}
+func (t *Transport) stop_sending() {
+	t.tx_state = IDLE
+	t.tx_buffer = []byte{}
+	t.tx_frame_length = 0
+	t.timer_rx_fc.stop()
+	t.timer_tx_stmin.stop()
+	t.remote_blocksize = 0
+	t.tx_block_counter = 0
+	t.tx_seqnum = 0
+	t.wft_counter = 0
 }
 
 func (t *Transport) available() bool {
