@@ -109,7 +109,7 @@ func (t *Transport) process_tx() (Message, bool) {
 			} else if flow_control_frame.flow == CONTINUE && !t.timer_rx_fc.is_timed_out() {
 				t.wft_counter = 0
 				t.timer_rx_fc.stop()
-				//t.timer_tx_stmin.set_timeout(flow_control_frame.stmin_sec)
+				t.timer_tx_stmin.set_timeout(flow_control_frame.stmin_sec)
 				t.remote_blocksize = flow_control_frame.blocksize
 				if t.tx_state == WAIT {
 					t.tx_block_counter = 0
@@ -175,16 +175,14 @@ func (t *Transport) process_tx() (Message, bool) {
 	} else if t.tx_state == WAIT {
 	} else if t.tx_state == TRANSMIT {
 		if t.timer_tx_stmin.is_timed_out() || t.squash_stmin_requirement {
-			/*
-							data_length = self.params.ll_data_length-1-len(self.address.tx_payload_prefix)
-				        msg_data = self.address.tx_payload_prefix + bytearray([0x20 | self.tx_seqnum]) + self.tx_buffer[:data_length]
-				        arbitration_id  = self.address.get_tx_arbitraton_id()
-				        output_msg = self.make_tx_msg(arbitration_id, msg_data)
-				        self.tx_buffer = self.tx_buffer[data_length:]
-				        self.tx_seqnum = (self.tx_seqnum + 1 ) & 0xF
-				        self.timer_tx_stmin.start()
-				        self.tx_block_counter+=1
-			*/
+			data_length := t.data_length - 1 - len(t.address.tx_payload_prefix)
+			msg_data := append([]byte{0x20 | byte(t.tx_seqnum)}, t.tx_buffer[:data_length]...)
+			m = t.make_tx_msg(t.address.txid, msg_data)
+			t.tx_buffer = t.tx_buffer[data_length:]
+			t.tx_seqnum = (t.tx_seqnum + 1) & 0xF
+			t.timer_tx_stmin.start()
+			t.tx_block_counter += 1
+			return m, true
 		}
 		if t.remote_blocksize != 0 && t.tx_block_counter >= t.remote_blocksize {
 			t.tx_state = WAIT

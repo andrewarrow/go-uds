@@ -28,3 +28,6 @@ func (t *Timer) stop() {
 func (t *Timer) start() {
 	t.startedAt = time.Now().UnixNano() / 1000 / 1000
 }
+func (t *Timer) set_timeout(msec int) {
+	t.timeout = float32(msec) / 1000.0
+}
