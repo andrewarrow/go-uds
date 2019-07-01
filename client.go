@@ -45,9 +45,7 @@ func (c *Client) Transfer_data(seqnum byte, data []byte) *Response {
 }
 func (c *Client) Read_data_by_id(data []int) *Response {
 	req := service_read_data_by_id_make_request(data)
-	//fmt.Println(req)
 	response := c.send_request(req)
-	//fmt.Println(999, ponse)
 	service_read_data_by_id_handle_response(response)
 	return response
 }

@@ -296,24 +296,24 @@ func TestStmin_requirement(t *testing.T) {
 	msg, _ := get_tx_can_msg()
 	eq(t, msg.Payload, append([]byte{byte(0x10 | ((size >> 8) & 0xF)), byte(size & 0xFF)}, payload[:6]...))
 	simulate_rx_flowcontrol(SINGLE, stmin, blocksize)
-	for {
-		test_stack.Process()
-		msg, ok := get_tx_can_msg()
-		fmt.Println(msg, ok)
-		time.Sleep(300 * time.Millisecond)
-	}
 	/*
-	   t = time.time()
-	   self.simulate_rx_flowcontrol(flow_status=0, stmin=stmin, blocksize=blocksize)
-	   msg = self.assert_tx_timing_spin_wait_for_msg(mintime=0.095, maxtime=1)
-	   self.assertEqual(msg.data, bytearray([0x21] + payload[6:13]))
-	   msg = self.assert_tx_timing_spin_wait_for_msg(mintime=0.095, maxtime=1)
-	   self.assertEqual(msg.data, bytearray([0x22] + payload[13:20]))
-	   msg = self.assert_tx_timing_spin_wait_for_msg(mintime=0.095, maxtime=1)
-	   self.assertEqual(msg.data, bytearray([0x23] + payload[20:27]))
-	   self.simulate_rx_flowcontrol(flow_status=0, stmin=stmin, blocksize=blocksize)
-	   msg = self.assert_tx_timing_spin_wait_for_msg(mintime=0.095, maxtime=1)
-	   self.assertEqual(msg.data, bytearray([0x24] + payload[27:30]))
+		for {
+			test_stack.Process()
+			msg, ok := get_tx_can_msg()
+			fmt.Println(msg, ok)
+			time.Sleep(300 * time.Millisecond)
+		}
+		   t = time.time()
+		   self.simulate_rx_flowcontrol(flow_status=0, stmin=stmin, blocksize=blocksize)
+		   msg = self.assert_tx_timing_spin_wait_for_msg(mintime=0.095, maxtime=1)
+		   self.assertEqual(msg.data, bytearray([0x21] + payload[6:13]))
+		   msg = self.assert_tx_timing_spin_wait_for_msg(mintime=0.095, maxtime=1)
+		   self.assertEqual(msg.data, bytearray([0x22] + payload[13:20]))
+		   msg = self.assert_tx_timing_spin_wait_for_msg(mintime=0.095, maxtime=1)
+		   self.assertEqual(msg.data, bytearray([0x23] + payload[20:27]))
+		   self.simulate_rx_flowcontrol(flow_status=0, stmin=stmin, blocksize=blocksize)
+		   msg = self.assert_tx_timing_spin_wait_for_msg(mintime=0.095, maxtime=1)
+		   self.assertEqual(msg.data, bytearray([0x24] + payload[27:30]))
 	*/
 }
 func TestSend_nothing_with_empty_payload(t *testing.T)       {}
