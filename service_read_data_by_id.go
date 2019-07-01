@@ -49,11 +49,10 @@ func (c *Client) service_read_data_by_id_handle_response(r *Response) {
 		}
 		offset += 2
 
-		codec_length := c.Data_identifiers[did]
+		codec_length := c.Data_identifiers[int(did)]
 		subpayload := r.Data[offset : offset+codec_length]
 		offset += codec_length
-		val := subpayload
-		r.Service_data[fmt.Sprintf("%d", did)] = val
+		r.Service_data[fmt.Sprintf("%d", did)] = subpayload
 	}
 
 }

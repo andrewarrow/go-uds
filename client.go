@@ -1,20 +1,20 @@
 package uds
 
-import "fmt"
+//import "fmt"
 import "github.com/andrewarrow/go-uds/isotp"
 
 type Client struct {
 	conn                       isotp.AnyConn
 	timeout                    float32
 	suppress_positive_response bool
-	Data_identifiers           map[byte]int
+	Data_identifiers           map[int]int
 }
 
 func NewClient(connection isotp.AnyConn, timeout float32) *Client {
 	c := Client{}
 	c.conn = connection
 	c.suppress_positive_response = true
-	c.Data_identifiers = map[byte]int{}
+	c.Data_identifiers = map[int]int{}
 	return &c
 }
 
@@ -39,7 +39,6 @@ func (c *Client) send_request(request *Request) *Response {
 
 func (c *Client) Transfer_data(seqnum byte, data []byte) *Response {
 	req := service_transfer_make_request(seqnum, data)
-	fmt.Println(req)
 	reponse := c.send_request(req)
 	service_transfer_handle_response(reponse)
 	return reponse

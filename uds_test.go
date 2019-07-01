@@ -44,8 +44,9 @@ func TestReadDataById(t *testing.T) {
 	client.Data_identifiers[1] = 1
 	response := client.Read_data_by_id([]int{0x1})
 	//self.assertTrue(response.positive)
-	fmt.Println(response.Service_data)
 	//self.assertEqual(values[1], (0x1234,))
+	//eq(t, response.Service_data["parameter_records"], []byte{0x89, 0xab, 0xcd, 0xef})
+	fmt.Println("", response)
 
 	time.Sleep(20 * time.Millisecond)
 }
