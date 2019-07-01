@@ -47,7 +47,7 @@ func make_payload(size, start_val int) []byte {
 	a := []byte{}
 	i := start_val
 	for {
-		a = append(a, byte(i))
+		a = append(a, byte(i%0x100))
 		i++
 		if i >= start_val+size {
 			break

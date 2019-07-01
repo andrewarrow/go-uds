@@ -106,6 +106,12 @@ func TestMultiFrameFlowControl(t *testing.T) {
 	compareStrings(t, test_stack.Recv(), payload, "")
 	ensureEmpty(t, test_stack.Recv())
 }
+
+/*
+   def test_receive_overflow_handling(self):
+   def test_receive_overflow_handling_escape_sequence(self):
+*/
+
 func TestMultiFrameFlowControlPadding(t *testing.T) {
 	test_stack.Stmin = 0x02
 	test_stack.Blocksize = 0x05
@@ -174,6 +180,7 @@ func TestTimeoutFrameAfterFirst(t *testing.T) {
 	test_stack.Process()
 	ensureEmpty(t, test_stack.Recv())
 }
+
 func TestRecoverTimeoutFrameAfterFirst(t *testing.T) {
 	test_stack.rx_consecutive_frame_timeout = 200
 	test_stack.makeTimers()
@@ -205,35 +212,68 @@ func TestReceive_multiframe_interrupting_another(t *testing.T) {
 	ensureEmpty(t, test_stack.Recv())
 }
 
-func TestReceive_single_frame_interrupt_multiframe_then_recover(t *testing.T) {}
-func TestReceive_4095_multiframe(t *testing.T)                                {}
-func TestReceive_4095_multiframe_check_blocksize(t *testing.T)                {}
-func TestReceive_data_length_12_bytes(t *testing.T)                           {}
-func TestReceive_data_length_5_bytes(t *testing.T)                            {}
-func TestReceive_data_length_12_but_set_8_bytes(t *testing.T)                 {}
-func TestSend_single_frame(t *testing.T)                                      {}
-func TestPadding_single_frame(t *testing.T)                                   {}
-func TestPadding_single_frame_dl_12_bytes(t *testing.T)                       {}
-func TestSend_multiple_single_frame_one_process(t *testing.T)                 {}
-func TestSend_small_multiframe(t *testing.T)                                  {}
-func TestPadding_multi_frame(t *testing.T)                                    {}
-func TestPadding_multi_frame_dl_12_bytes(t *testing.T)                        {}
-func TestSend_2_small_multiframe(t *testing.T)                                {}
-func TestSend_multiframe_flow_control_timeout(t *testing.T)                   {}
-func TestSend_multiframe_flow_control_timeout_recover(t *testing.T)           {}
-func TestSend_unexpected_flow_control(t *testing.T)                           {}
-func TestSend_respect_wait_frame(t *testing.T)                                {}
-func TestSend_respect_wait_frame_but_timeout(t *testing.T)                    {}
-func TestSend_wait_frame_after_first_frame_wftmax_0(t *testing.T)             {}
-func TestSend_wait_frame_after_consecutive_frame_wftmax_0(t *testing.T)       {}
-func TestSend_wait_frame_after_first_frame_reach_max(t *testing.T)            {}
-func TestSend_wait_frame_after_conscutive_frame_reach_max(t *testing.T)       {}
-func TestSend_4095_multiframe_zero_stmin(t *testing.T)                        {}
-func TestSend_128_multiframe_variable_blocksize(t *testing.T)                 {}
-func TestSquash_timing_requirement(t *testing.T)                              {}
-func TestStmin_requirement(t *testing.T)                                      {}
-func TestSend_nothing_with_empty_payload(t *testing.T)                        {}
-func TestSend_single_frame_after_empty_payload(t *testing.T)                  {}
-func TestSend_blocksize_zero(t *testing.T)                                    {}
-func TestTransmit_data_length_12_bytes(t *testing.T)                          {}
-func TestTransmit_data_length_5_bytes(t *testing.T)                           {}
+func TestReceive_single_frame_interrupt_multiframe_then_recover(t *testing.T) {
+	payload1 := make_payload(16, 0)
+	payload2 := make_payload(16, 1)
+	sf_payload := make_payload(5, 2)
+	simulate_rx(append([]byte{0x10, byte(16)}, payload1[0:6]...))
+	test_stack.Process()
+	simulate_rx(append([]byte{0x21}, payload1[6:13]...))
+	simulate_rx(append([]byte{0x05}, sf_payload...))
+	simulate_rx(append([]byte{0x10, byte(16)}, payload2[0:6]...))
+	test_stack.Process()
+	simulate_rx(append([]byte{0x21}, payload2[6:13]...))
+	simulate_rx(append([]byte{0x22}, payload2[13:16]...))
+	test_stack.Process()
+	eq(t, test_stack.Recv(), sf_payload)
+	eq(t, test_stack.Recv(), payload2)
+	ensureEmpty(t, test_stack.Recv())
+}
+func TestReceive_4095_multiframe(t *testing.T) {
+	payload_size := 4095
+	payload := make_payload(payload_size, 0)
+	simulate_rx(append([]byte{0x1F, 0xFF}, payload[0:6]...))
+	n := 6
+	seqnum := byte(1)
+	for {
+		simulate_rx(append([]byte{0x20 | (seqnum & 0xF)}, payload[n:min(n+7, payload_size)]...))
+		test_stack.Process()
+		n += 7
+		seqnum += 1
+		if n > payload_size {
+			break
+		}
+	}
+	eq(t, test_stack.Recv(), payload)
+	ensureEmpty(t, test_stack.Recv())
+}
+func TestReceive_4095_multiframe_check_blocksize(t *testing.T)          {}
+func TestReceive_data_length_12_bytes(t *testing.T)                     {}
+func TestReceive_data_length_5_bytes(t *testing.T)                      {}
+func TestReceive_data_length_12_but_set_8_bytes(t *testing.T)           {}
+func TestSend_single_frame(t *testing.T)                                {}
+func TestPadding_single_frame(t *testing.T)                             {}
+func TestPadding_single_frame_dl_12_bytes(t *testing.T)                 {}
+func TestSend_multiple_single_frame_one_process(t *testing.T)           {}
+func TestSend_small_multiframe(t *testing.T)                            {}
+func TestPadding_multi_frame(t *testing.T)                              {}
+func TestPadding_multi_frame_dl_12_bytes(t *testing.T)                  {}
+func TestSend_2_small_multiframe(t *testing.T)                          {}
+func TestSend_multiframe_flow_control_timeout(t *testing.T)             {}
+func TestSend_multiframe_flow_control_timeout_recover(t *testing.T)     {}
+func TestSend_unexpected_flow_control(t *testing.T)                     {}
+func TestSend_respect_wait_frame(t *testing.T)                          {}
+func TestSend_respect_wait_frame_but_timeout(t *testing.T)              {}
+func TestSend_wait_frame_after_first_frame_wftmax_0(t *testing.T)       {}
+func TestSend_wait_frame_after_consecutive_frame_wftmax_0(t *testing.T) {}
+func TestSend_wait_frame_after_first_frame_reach_max(t *testing.T)      {}
+func TestSend_wait_frame_after_conscutive_frame_reach_max(t *testing.T) {}
+func TestSend_4095_multiframe_zero_stmin(t *testing.T)                  {}
+func TestSend_128_multiframe_variable_blocksize(t *testing.T)           {}
+func TestSquash_timing_requirement(t *testing.T)                        {}
+func TestStmin_requirement(t *testing.T)                                {}
+func TestSend_nothing_with_empty_payload(t *testing.T)                  {}
+func TestSend_single_frame_after_empty_payload(t *testing.T)            {}
+func TestSend_blocksize_zero(t *testing.T)                              {}
+func TestTransmit_data_length_12_bytes(t *testing.T)                    {}
+func TestTransmit_data_length_5_bytes(t *testing.T)                     {}
