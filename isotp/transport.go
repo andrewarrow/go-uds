@@ -70,6 +70,7 @@ func NewTransport(a Address, rxfn func() (Message, bool), txfn func(m Message)) 
 func (t *Transport) makeTimers() {
 	t.timer_rx_fc = NewTimer(float32(t.rx_flowcontrol_timeout) / 1000.0)
 	t.timer_rx_cf = NewTimer(float32(t.rx_consecutive_frame_timeout) / 1000.0)
+	t.timer_tx_stmin = NewTimer(float32(t.rx_consecutive_frame_timeout) / 1000.0)
 }
 
 func (t *Transport) Process() {

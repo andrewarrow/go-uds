@@ -271,38 +271,49 @@ func TestSend_wait_frame_after_conscutive_frame_reach_max(t *testing.T) {}
 func TestSend_4095_multiframe_zero_stmin(t *testing.T)                  {}
 func TestSend_128_multiframe_variable_blocksize(t *testing.T)           {}
 func TestSquash_timing_requirement(t *testing.T)                        {}
+
+/*
+   def assert_tx_timing_spin_wait_for_msg(self, mintime, maxtime):
+            msg = None
+            diff = 0
+            t = time.time()
+            while msg is None:
+                    self.stack.process()
+                    msg = self.get_tx_can_msg()
+                    diff = time.time() - t
+                    self.assertLess(diff, maxtime, 'Timed out') # timeout
+            self.assertGreater(diff, mintime, 'Stack sent a message too quickly')
+            return msg
+*/
 func TestStmin_requirement(t *testing.T) {
 	test_tx_queue = util.NewInterfaceQueue()
-	test_stack.Stmin = 100
+	stmin := byte(100)
 	size := 30
-	test_stack.Blocksize = 3
+	blocksize := byte(3)
 	payload := make_payload(size, 0)
 	test_stack.Send(payload)
 	test_stack.Process()
 	msg, _ := get_tx_can_msg()
 	eq(t, msg.Payload, append([]byte{byte(0x10 | ((size >> 8) & 0xF)), byte(size & 0xFF)}, payload[:6]...))
+	simulate_rx_flowcontrol(SINGLE, stmin, blocksize)
+	for {
+		test_stack.Process()
+		msg, ok := get_tx_can_msg()
+		fmt.Println(msg, ok)
+		time.Sleep(300 * time.Millisecond)
+	}
 	/*
-		   stmin = 100 # 100 msec
-		            payload_size = 30
-		            blocksize = 3
-		            payload = self.make_payload(payload_size)
-		            self.tx_isotp_frame(payload)
-		            self.stack.process()
-		            t = time.time()
-		            msg = self.get_tx_can_msg()
-		            self.assertEqual(msg.data,
-
-							[0x10 | ((payload_size >> 8) & 0xF), payload_size & 0xFF] + payload[:6]), 'stmin = %d' % stmin)
-		            self.simulate_rx_flowcontrol(flow_status=0, stmin=stmin, blocksize=blocksize)
-		            msg = self.assert_tx_timing_spin_wait_for_msg(mintime=0.095, maxtime=1)
-		            self.assertEqual(msg.data, bytearray([0x21] + payload[6:13]))
-		            msg = self.assert_tx_timing_spin_wait_for_msg(mintime=0.095, maxtime=1)
-		            self.assertEqual(msg.data, bytearray([0x22] + payload[13:20]))
-		            msg = self.assert_tx_timing_spin_wait_for_msg(mintime=0.095, maxtime=1)
-		            self.assertEqual(msg.data, bytearray([0x23] + payload[20:27]))
-		            self.simulate_rx_flowcontrol(flow_status=0, stmin=stmin, blocksize=blocksize)
-		            msg = self.assert_tx_timing_spin_wait_for_msg(mintime=0.095, maxtime=1)
-		            self.assertEqual(msg.data, bytearray([0x24] + payload[27:30]))
+	   t = time.time()
+	   self.simulate_rx_flowcontrol(flow_status=0, stmin=stmin, blocksize=blocksize)
+	   msg = self.assert_tx_timing_spin_wait_for_msg(mintime=0.095, maxtime=1)
+	   self.assertEqual(msg.data, bytearray([0x21] + payload[6:13]))
+	   msg = self.assert_tx_timing_spin_wait_for_msg(mintime=0.095, maxtime=1)
+	   self.assertEqual(msg.data, bytearray([0x22] + payload[13:20]))
+	   msg = self.assert_tx_timing_spin_wait_for_msg(mintime=0.095, maxtime=1)
+	   self.assertEqual(msg.data, bytearray([0x23] + payload[20:27]))
+	   self.simulate_rx_flowcontrol(flow_status=0, stmin=stmin, blocksize=blocksize)
+	   msg = self.assert_tx_timing_spin_wait_for_msg(mintime=0.095, maxtime=1)
+	   self.assertEqual(msg.data, bytearray([0x24] + payload[27:30]))
 	*/
 }
 func TestSend_nothing_with_empty_payload(t *testing.T)       {}

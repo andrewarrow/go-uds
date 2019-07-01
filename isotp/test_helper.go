@@ -59,6 +59,24 @@ func make_payload(size, start_val int) []byte {
 func simulate_rx(b []byte) {
 	test_rx_queue.Put(NewMessage(RXID, b))
 }
+func flow_status_byte(flavor string) byte {
+	if flavor == FIRST {
+		return 1
+	}
+	if flavor == CONSECUTIVE {
+		return 2
+	}
+	if flavor == FLOW {
+		return 3
+	}
+	return 0
+}
+func simulate_rx_flowcontrol(flow string, stmin, blocksize byte) {
+	fsb := flow_status_byte(flow)
+	data := []byte{0x30 | (fsb & 0xF), blocksize, stmin}
+	simulate_rx(data)
+}
+
 func ensureEmpty(t *testing.T, b []byte) {
 	if len(b) != 0 {
 		t.Logf("%v", b)
