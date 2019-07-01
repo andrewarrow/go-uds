@@ -23,6 +23,8 @@ func service_read_data_by_id_make_request(data []int) *Request {
 
 func (c *Client) service_read_data_by_id_handle_response(r *Response) {
 
+	did := 0
+	//did := binary.BigEndian.Uint16(r.Data[0:1])
 	offset := 0
 	for {
 		if len(r.Data) <= offset {
@@ -34,7 +36,6 @@ func (c *Client) service_read_data_by_id_handle_response(r *Response) {
 			}
 		}
 
-		did := r.Data[offset : offset+2][0]
 		if did == 0 && true {
 			compare := []byte{}
 			for {

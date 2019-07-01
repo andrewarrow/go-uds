@@ -55,7 +55,6 @@ func (t *Transport) process_rx(msg Message) {
 				} else {
 					t.rx_buffer = append(t.rx_buffer, pdu.payload...)
 				}
-				fmt.Println(t.rx_buffer, 99999)
 
 				if len(t.rx_buffer) >= t.rx_frame_length {
 					t.rx_queue.Put(append([]byte{}, t.rx_buffer...))

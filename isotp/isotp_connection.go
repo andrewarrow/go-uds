@@ -80,9 +80,9 @@ func (ic *IsotpConnection) Wait_frame() []byte {
 			m := ic.fromIsoTPQueue.Get()
 			return m
 		}
-		time.Sleep(1 * time.Millisecond)
+		time.Sleep(500 * time.Millisecond)
 		count++
-		if count > 20 {
+		if count > 30 {
 			break
 		}
 	}
