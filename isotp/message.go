@@ -68,7 +68,11 @@ func NewPDU(msg Message, start_of_data int, data_length int) PDU {
 		}
 	} else if pdu.flavor == CONSECUTIVE {
 		pdu.seqnum = int(msg.Payload[start_of_data]) & 0xF
-		pdu.payload = msg.Payload[start_of_data+1 : data_length]
+		if data_length >= len(msg.Payload) {
+			pdu.payload = msg.Payload[start_of_data+1:]
+		} else {
+			pdu.payload = msg.Payload[start_of_data+1 : data_length]
+		}
 	} else if pdu.flavor == FLOW {
 		f := int(msg.Payload[start_of_data]) & 0xF
 		if f == 0 {

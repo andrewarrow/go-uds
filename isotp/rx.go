@@ -7,12 +7,12 @@ func (t *Transport) process_rx(msg Message) {
 		//	fmt.Println("ID", msg.Id)
 		return
 	}
-	//fmt.Println("calling process_rx ", msg)
+	fmt.Println("calling process_rx ", msg)
 	pdu := NewPDU(msg, t.address.rx_prefix_size, t.data_length)
 	//fmt.Println(pdu.flavor)
 	if t.timer_rx_cf.is_timed_out() {
 		fmt.Println("Reception of CONSECUTIVE_FRAME timed out.")
-		t.stop_receiving()
+		//t.stop_receiving()
 	}
 	if pdu.flavor == FLOW {
 		t.last_flow_control_frame = &pdu
@@ -55,6 +55,7 @@ func (t *Transport) process_rx(msg Message) {
 				} else {
 					t.rx_buffer = append(t.rx_buffer, pdu.payload...)
 				}
+				fmt.Println(t.rx_buffer, 99999)
 
 				if len(t.rx_buffer) >= t.rx_frame_length {
 					t.rx_queue.Put(append([]byte{}, t.rx_buffer...))

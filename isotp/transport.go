@@ -82,7 +82,7 @@ func (t *Transport) Process() {
 		}
 		t.process_rx(msg)
 		i++
-		if i > 50 {
+		if i > 150 {
 			break
 		}
 	}

@@ -57,7 +57,7 @@ func (ic *IsotpConnection) Open() {
 				ic.fromIsoTPQueue.Put(stuff)
 			}
 			fmt.Println("  [ml] sleep")
-			time.Sleep(time.Second * 1)
+			time.Sleep(time.Millisecond * 10)
 		}
 	}()
 }
