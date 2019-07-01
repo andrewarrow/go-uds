@@ -21,9 +21,8 @@ func service_read_data_by_id_make_request(data []int) *Request {
 	return r
 }
 
-func service_read_data_by_id_handle_response(r *Response) {
+func (c *Client) service_read_data_by_id_handle_response(r *Response) {
 
-	//fmt.Println(r)
 	offset := 0
 	for {
 		if len(r.Data) <= offset {
@@ -35,14 +34,25 @@ func service_read_data_by_id_handle_response(r *Response) {
 			}
 		}
 
-		did := r.Data[offset : offset+2]
-
-		codec := "123" //DidCodec.from_config(didconfig[did])
+		did := r.Data[offset : offset+2][0]
+		if did == 0 && true {
+			compare := []byte{}
+			for {
+				compare = append(compare, 0)
+				if len(compare) == len(r.Data)-offset {
+					break
+				}
+			}
+			if fmt.Sprintf("%v", r.Data[offset:]) == fmt.Sprintf("%v", compare) {
+				break
+			}
+		}
 		offset += 2
 
-		//subpayload := r.Data[offset : offset+len(codec)]
-		offset += len(codec)
-		val := "val" //codec.decode(subpayload)
+		codec_length := c.Data_identifiers[did]
+		subpayload := r.Data[offset : offset+codec_length]
+		offset += codec_length
+		val := subpayload
 		r.Service_data[fmt.Sprintf("%d", did)] = val
 	}
 

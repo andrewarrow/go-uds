@@ -7,12 +7,14 @@ type Client struct {
 	conn                       isotp.AnyConn
 	timeout                    float32
 	suppress_positive_response bool
+	Data_identifiers           map[byte]int
 }
 
 func NewClient(connection isotp.AnyConn, timeout float32) *Client {
 	c := Client{}
 	c.conn = connection
 	c.suppress_positive_response = true
+	c.Data_identifiers = map[byte]int{}
 	return &c
 }
 
@@ -38,14 +40,13 @@ func (c *Client) send_request(request *Request) *Response {
 func (c *Client) Transfer_data(seqnum byte, data []byte) *Response {
 	req := service_transfer_make_request(seqnum, data)
 	fmt.Println(req)
-	ponse := c.send_request(req)
-	//fmt.Println(999, ponse)
-	service_transfer_handle_response(ponse)
-	return ponse
+	reponse := c.send_request(req)
+	service_transfer_handle_response(reponse)
+	return reponse
 }
 func (c *Client) Read_data_by_id(data []int) *Response {
 	req := service_read_data_by_id_make_request(data)
 	response := c.send_request(req)
-	service_read_data_by_id_handle_response(response)
+	c.service_read_data_by_id_handle_response(response)
 	return response
 }

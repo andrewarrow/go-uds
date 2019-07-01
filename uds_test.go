@@ -41,6 +41,7 @@ func TestReadDataById(t *testing.T) {
 		conn.fromuserm.Unlock()
 	}()
 
+	client.Data_identifiers[1] = 1
 	response := client.Read_data_by_id([]int{0x1})
 	//self.assertTrue(response.positive)
 	fmt.Println(response.Service_data)
