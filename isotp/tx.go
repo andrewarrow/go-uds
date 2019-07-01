@@ -133,8 +133,42 @@ func (t *Transport) process_tx() (Message, bool) {
 		if t.tx_queue.Len() > 0 {
 			payload := t.tx_queue.Get()
 			t.tx_buffer = payload
-			//msg_data  = self.address.tx_payload_prefix + bytearray([0x0 | len(self.tx_buffer)]) + self.tx_buffer
-			msg_data := append([]byte{byte(0x0 | len(t.tx_buffer))}, t.tx_buffer...)
+			size_on_first_byte := false
+			if len(t.tx_buffer) <= 7 {
+				size_on_first_byte = true
+			}
+			size_offset := 2
+			if size_on_first_byte {
+				size_offset = 1
+			}
+			msg_data := []byte{}
+			if len(t.tx_buffer) <= t.data_length-size_offset-len(t.address.tx_payload_prefix) {
+				if size_on_first_byte {
+					msg_data = append([]byte{byte(0x0 | len(t.tx_buffer))}, t.tx_buffer...)
+				} else {
+					msg_data = append([]byte{0x0, byte(len(t.tx_buffer))}, t.tx_buffer...)
+				}
+
+			} else {
+				t.tx_frame_length = len(t.tx_buffer)
+				encode_length_on_2_first_bytes := false
+				if t.tx_frame_length <= 4095 {
+					encode_length_on_2_first_bytes = true
+				}
+				data_length := 0
+				if encode_length_on_2_first_bytes {
+					data_length = t.data_length - 2 - len(t.address.tx_payload_prefix)
+					msg_data = append([]byte{0x10 | byte((t.tx_frame_length>>8)&0xF), byte(t.tx_frame_length & 0xFF)}, t.tx_buffer[:data_length]...)
+				} else {
+					data_length = t.data_length - 6 - len(t.address.tx_payload_prefix)
+					msg_data = append([]byte{0x10, 0x00, byte(t.tx_frame_length>>24) & 0xFF, byte(t.tx_frame_length>>16) & 0xFF, byte(t.tx_frame_length>>8) & 0xFF, byte(t.tx_frame_length>>0) & 0xFF}, t.tx_buffer[:data_length]...)
+				}
+				t.tx_buffer = t.tx_buffer[data_length:]
+				t.tx_state = WAIT
+				t.tx_seqnum = 1
+				t.timer_rx_fc.start()
+
+			}
 			m = t.make_tx_msg(t.address.txid, msg_data)
 			return m, true
 		}
