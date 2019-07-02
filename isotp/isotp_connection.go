@@ -38,7 +38,6 @@ func NewIsotpConnection(rx, tx int64, rxfn func() (Message, bool),
 func (ic *IsotpConnection) Send_and_grant_flow_request(payload []byte) []byte {
 	msg_data := append([]byte{byte(0x0 | len(payload))}, payload...)
 	msg := ic.Stack.make_tx_msg(ic.Stack.address.txid, msg_data)
-	fmt.Println(msg)
 	ic.Stack.txfn(msg)
 	flow := []byte{}
 	// wait for flow request
@@ -71,8 +70,8 @@ func (ic *IsotpConnection) Send_and_grant_flow_request(payload []byte) []byte {
 		if ic.Stack.address.is_for_me(msg) == false {
 			continue
 		}
-		flow = append(flow, msg.Payload...)
-		if len(flow) > 21 {
+		flow = append(flow, msg.Payload[1:]...)
+		if len(flow) > 19 {
 			break
 		}
 	}
