@@ -49,3 +49,8 @@ func (c *Client) Read_data_by_id(data []int) *Response {
 	c.service_read_data_by_id_handle_response(response)
 	return response
 }
+func (c *Client) Simple_read_data_by_id(data []int) []byte {
+	request := service_read_data_by_id_make_request(data)
+	payload := request.get_payload(false)
+	return c.conn.Send_and_grant_flow_request(payload)
+}

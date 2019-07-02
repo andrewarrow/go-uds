@@ -17,6 +17,19 @@ func TestMain(m *testing.M) {
 	test_stack = NewTransport(a, stack_rxfn, stack_txfn)
 	os.Exit(m.Run())
 }
+func TestRead15DigitAsciiString(t *testing.T) {
+	//askForDid := []byte{byte(TXID), 0x22, 0xFF, 0xFD}
+	//flowRequest := []byte{byte(RXID), 0x37, 45, 92}
+	//flowGranted := []byte{byte(TXID), 0x39, 55, 52}
+	//flowContent1 := []byte{byte(RXID), 0x37, 0xFF, 0xFD, 45, 92, 11, 12}
+	//flowContent2 := []byte{byte(RXID), 45, 92, 11, 12, 13, 14, 15}
+	//flowContent3 := []byte{byte(RXID), 11, 12, 13, 14}
+
+	//msg := NewMessage(RXID, a)
+	//test_rx_queue.Put(msg)
+	//test_stack.Process()
+	//eq(t, test_stack.Recv(), payload)
+}
 func TestSingleFrame(t *testing.T) {
 	a := []byte{0x05, 0x11, 0x22, 0x33, 0x44, 0x55}
 	msg := NewMessage(RXID, a)

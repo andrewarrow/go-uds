@@ -2,7 +2,7 @@ package isotp
 
 import "time"
 
-import "fmt"
+//import "fmt"
 import "github.com/andrewarrow/go-uds/util"
 
 type AnyConn interface {
@@ -10,6 +10,7 @@ type AnyConn interface {
 	Empty_txqueue()
 	Send(payload []byte)
 	Wait_frame() []byte
+	Send_and_grant_flow_request(payload []byte) []byte
 }
 
 type IsotpConnection struct {
@@ -34,10 +35,35 @@ func NewIsotpConnection(rx, tx int64, rxfn func() (Message, bool),
 	return &ic
 }
 
+func (ic *IsotpConnection) Send_and_grant_flow_request(payload []byte) []byte {
+	msg := ic.Stack.make_tx_msg(ic.Stack.address.txid, payload)
+	ic.Stack.txfn(msg)
+	// wait for flow request
+	time.Sleep(1 * time.Second)
+	msg = ic.Stack.make_flow_control(CONTINUE)
+	ic.Stack.txfn(msg)
+	// read flow
+	flow := []byte{}
+	t1 := time.Now().Unix()
+	for {
+		msg, _ := ic.Stack.rxfn()
+		if ic.Stack.address.is_for_me(msg) == false {
+			continue
+		}
+		flow = append(flow, msg.Payload...)
+
+		if time.Now().Unix()-t1 > 5 {
+			break
+		}
+	}
+
+	return flow
+}
+
 func (ic *IsotpConnection) Open() {
 	go func() {
 		for {
-			fmt.Println("  [ml] toIsoTP")
+			//fmt.Println("  [ml] toIsoTP")
 			for {
 				if ic.toIsoTPQueue.Len() == 0 {
 					break
@@ -48,7 +74,7 @@ func (ic *IsotpConnection) Open() {
 
 			ic.Stack.Process()
 
-			fmt.Println("  [ml] fromIsoTP")
+			//fmt.Println("  [ml] fromIsoTP")
 			for {
 				if ic.Stack.available() == false {
 					break
@@ -56,7 +82,7 @@ func (ic *IsotpConnection) Open() {
 				stuff := ic.Stack.Recv()
 				ic.fromIsoTPQueue.Put(stuff)
 			}
-			fmt.Println("  [ml] sleep")
+			//fmt.Println("  [ml] sleep")
 			time.Sleep(time.Millisecond * 10)
 		}
 	}()
