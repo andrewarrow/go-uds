@@ -1,6 +1,6 @@
 package uds
 
-//import "fmt"
+import "fmt"
 import "github.com/andrewarrow/go-uds/isotp"
 
 type Client struct {
@@ -49,9 +49,12 @@ func (c *Client) Read_data_by_id(data []int) *Response {
 	c.service_read_data_by_id_handle_response(response)
 	return response
 }
-func (c *Client) Simple_read_data_by_id(did, length int) string {
+func (c *Client) Simple_read_data_by_id(did, length int, flavor string) string {
 	request := service_read_data_by_id_make_request([]int{did})
 	payload := request.get_payload(false)
 	data := c.conn.Send_and_grant_flow_request(payload, length)
-	return string(data[5:])
+	if flavor == "text" {
+		return string(data[5:])
+	}
+	return fmt.Sprintf("%v", data[5:])
 }
