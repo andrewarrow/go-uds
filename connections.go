@@ -24,7 +24,7 @@ func NewQueueConnection(name string, mtu int) *QueueConnection {
 	return &q
 }
 
-func (q *QueueConnection) Send_and_grant_flow_request(payload []byte) []byte {
+func (q *QueueConnection) Send_and_grant_flow_request(payload []byte, length int) []byte {
 	return []byte{}
 }
 func (q *QueueConnection) Empty_rxqueue() {

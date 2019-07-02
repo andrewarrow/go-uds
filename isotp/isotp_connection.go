@@ -10,7 +10,7 @@ type AnyConn interface {
 	Empty_txqueue()
 	Send(payload []byte)
 	Wait_frame() []byte
-	Send_and_grant_flow_request(payload []byte) []byte
+	Send_and_grant_flow_request(payload []byte, length int) []byte
 }
 
 type IsotpConnection struct {
@@ -35,7 +35,7 @@ func NewIsotpConnection(rx, tx int64, rxfn func() (Message, bool),
 	return &ic
 }
 
-func (ic *IsotpConnection) Send_and_grant_flow_request(payload []byte) []byte {
+func (ic *IsotpConnection) Send_and_grant_flow_request(payload []byte, length int) []byte {
 	msg_data := append([]byte{byte(0x0 | len(payload))}, payload...)
 	msg := ic.Stack.make_tx_msg(ic.Stack.address.txid, msg_data)
 	ic.Stack.txfn(msg)
@@ -71,7 +71,7 @@ func (ic *IsotpConnection) Send_and_grant_flow_request(payload []byte) []byte {
 			continue
 		}
 		flow = append(flow, msg.Payload[1:]...)
-		if len(flow) > 19 {
+		if len(flow) > length {
 			break
 		}
 	}
