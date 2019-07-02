@@ -2,7 +2,7 @@ package isotp
 
 import "time"
 
-//import "fmt"
+import "fmt"
 import "github.com/andrewarrow/go-uds/util"
 
 type AnyConn interface {
@@ -36,23 +36,43 @@ func NewIsotpConnection(rx, tx int64, rxfn func() (Message, bool),
 }
 
 func (ic *IsotpConnection) Send_and_grant_flow_request(payload []byte) []byte {
-	msg := ic.Stack.make_tx_msg(ic.Stack.address.txid, payload)
+	msg_data := append([]byte{byte(0x0 | len(payload))}, payload...)
+	msg := ic.Stack.make_tx_msg(ic.Stack.address.txid, msg_data)
+	fmt.Println(msg)
 	ic.Stack.txfn(msg)
-	// wait for flow request
-	time.Sleep(1 * time.Second)
-	msg = ic.Stack.make_flow_control(CONTINUE)
-	ic.Stack.txfn(msg)
-	// read flow
 	flow := []byte{}
+	// wait for flow request
+
 	t1 := time.Now().Unix()
 	for {
+		if time.Now().Unix()-t1 > 5 {
+			fmt.Println("timeout")
+			break
+		}
 		msg, _ := ic.Stack.rxfn()
 		if ic.Stack.address.is_for_me(msg) == false {
 			continue
 		}
 		flow = append(flow, msg.Payload...)
-
-		if time.Now().Unix()-t1 > 5 {
+		if true {
+			break
+		}
+	}
+	msg = ic.Stack.make_flow_control(CONTINUE)
+	ic.Stack.txfn(msg)
+	// read flow
+	t1 = time.Now().Unix()
+	for {
+		if time.Now().Unix()-t1 > 10 {
+			fmt.Println("timeout")
+			break
+		}
+		msg, _ := ic.Stack.rxfn()
+		if ic.Stack.address.is_for_me(msg) == false {
+			continue
+		}
+		flow = append(flow, msg.Payload...)
+		if len(flow) > 21 {
 			break
 		}
 	}
