@@ -4,6 +4,7 @@ type Request struct {
 	service         string
 	data            []byte
 	sid             byte
+	subfunction     byte
 	use_subfunction bool
 }
 
@@ -18,6 +19,7 @@ func NewRequest(sid byte, service string) *Request {
 func (r *Request) get_payload(suppress_positive_response bool) []byte {
 	payload := []byte{r.sid}
 	if r.use_subfunction {
+		r.data = []byte{r.subfunction}
 	} else {
 	}
 	return append(payload, r.data...)
