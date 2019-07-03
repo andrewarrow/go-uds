@@ -17,7 +17,6 @@ func NewClient(connection isotp.AnyConn, timeout float32) *Client {
 	c.Data_identifiers = map[int]int{}
 	return &c
 }
-
 func (c *Client) send_request(request *Request) *Response {
 	//fmt.Println(111)
 	c.conn.Empty_rxqueue()
