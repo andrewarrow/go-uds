@@ -36,12 +36,6 @@ func (c *Client) send_request(request *Request) *Response {
 	return response
 }
 
-func (c *Client) Transfer_data(seqnum byte, data []byte) *Response {
-	req := service_transfer_make_request(seqnum, data)
-	reponse := c.send_request(req)
-	service_transfer_handle_response(reponse)
-	return reponse
-}
 func (c *Client) Read_data_by_id(data []int) *Response {
 	req := service_read_data_by_id_make_request(data)
 	response := c.send_request(req)
@@ -61,5 +55,11 @@ func (c *Client) Request_download(ml MemoryLocation) string {
 	request := service_request_download_make_request(ml)
 	payload := request.get_payload(false)
 	data := c.conn.Send_and_wait_for_reply(payload)
-	return fmt.Sprintf("%v", data[5:])
+	return fmt.Sprintf("%v", data)
+}
+func (c *Client) Transfer_data(i int, data []byte) string {
+	request := service_transfer_data_make_request(i, data)
+	payload := request.get_payload(false)
+	response := c.conn.Send_and_wait_for_reply(payload)
+	return fmt.Sprintf("%v", response)
 }
