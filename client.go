@@ -57,3 +57,8 @@ func (c *Client) Simple_read_data_by_id(did, length int, flavor string) string {
 	}
 	return fmt.Sprintf("%v", data[5:])
 }
+func (c *Client) Request_download(ml MemoryLocation) string {
+	request := service_request_download_make_request(ml)
+	payload := request.get_payload(false)
+	return fmt.Sprintf("%v", payload)
+}
