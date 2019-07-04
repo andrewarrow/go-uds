@@ -66,3 +66,9 @@ func (c *Client) Transfer_data(i int, data []byte) string {
 func (c *Client) Request_transfer_exit(crc int) string {
 	return fmt.Sprintf("%v", "")
 }
+func (c *Client) Change_session(session int) string {
+	request := service_diagnostic_session_make_request(session)
+	payload := request.get_payload(false)
+	data := c.conn.Send_and_wait_for_reply(payload)
+	return fmt.Sprintf("%v", data)
+}
