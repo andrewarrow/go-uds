@@ -1,6 +1,9 @@
 package uds
 
 func service_request_download_make_request(ml MemoryLocation) *Request {
+
+	ml.AlfidByte()
+
 	r := NewRequest(0x34, "request_download")
 	r.use_subfunction = true
 
