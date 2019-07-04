@@ -63,6 +63,6 @@ func (c *Client) Transfer_data(i int, data []byte) string {
 	response := c.conn.Send_and_wait_for_reply(payload)
 	return fmt.Sprintf("%v", response)
 }
-func (c *Client) Request_transfer_exit(crc string) string {
+func (c *Client) Request_transfer_exit(crc int) string {
 	return fmt.Sprintf("%v", "")
 }
