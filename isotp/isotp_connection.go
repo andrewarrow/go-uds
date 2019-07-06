@@ -22,17 +22,15 @@ type IsotpConnection struct {
 	Stack          *Transport
 	rxfn           func() (Message, bool)
 	txfn           func(msg Message)
-	Release_init   func() int
 }
 
 func NewIsotpConnection(rx, tx int64, rxfn func() (Message, bool),
-	txfn func(msg Message), release_init func() int) *IsotpConnection {
+	txfn func(msg Message)) *IsotpConnection {
 	ic := IsotpConnection{}
 	a := NewAddress(rx, tx)
 	ic.Stack = NewTransport(a, rxfn, txfn)
 	ic.rxfn = rxfn
 	ic.txfn = txfn
-	ic.Release_init = release_init
 	ic.fromIsoTPQueue = util.NewQueue()
 	ic.toIsoTPQueue = util.NewQueue()
 	return &ic

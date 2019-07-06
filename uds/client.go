@@ -8,13 +8,15 @@ type Client struct {
 	timeout                    float32
 	suppress_positive_response bool
 	Data_identifiers           map[int]int
+	Release_init               func() int
 }
 
-func NewClient(connection isotp.AnyConn, timeout float32) *Client {
+func NewClient(connection isotp.AnyConn, timeout float32, ri func() int) *Client {
 	c := Client{}
 	c.conn = connection
 	c.suppress_positive_response = true
 	c.Data_identifiers = map[int]int{}
+	c.Release_init = ri
 	return &c
 }
 func (c *Client) send_request(request *Request) *Response {

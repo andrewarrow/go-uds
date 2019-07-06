@@ -8,9 +8,13 @@ import "os"
 var conn *QueueConnection
 var client *Client
 
+func ri() int {
+	return 0
+}
+
 func TestMain(m *testing.M) {
 	conn = NewQueueConnection("test", 4095)
-	client = NewClient(conn, 0.2)
+	client = NewClient(conn, 0.2, ri)
 	os.Exit(m.Run())
 }
 
