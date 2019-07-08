@@ -6,9 +6,13 @@ func service_request_download_make_request(ml MemoryLocation) *Request {
 
 	r := NewRequest(0x34, "request_download")
 	r.use_subfunction = true
+	r.data = append(r.data, ml.AlfidByte())
+	r.data = append(r.data, ml.GetAddressBytes()...)
+	r.data = append(r.data, ml.GetMemorySizeBytes()...)
 
 	/*
-		request.data += memory_location.alfid.get_byte()        # AddressAndLengthFormatIdentifier
+
+
 		request.data += memory_location.get_address_bytes()
 		request.data += memory_location.get_memorysize_bytes()
 	*/
