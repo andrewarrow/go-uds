@@ -57,20 +57,21 @@ func (c *Client) Simple_read_data_by_id(did, length int, flavor string) string {
 func (c *Client) Request_download(ml MemoryLocation) int {
 	request := service_request_download_make_request(ml)
 	payload := request.get_payload(false)
+	fmt.Println("client, Request_download", payload)
 	data := c.conn.Send_and_wait_for_reply(payload)
 
-  todecode := []byte{0, 0, 0, 0, 0, 0, 0, 0}
-  lfid := int(data[0] >> 4)
-  i := 1
-  for {
-    if i > lfid+1 {
-      break
-    }
-    todecode[7-(i-1)] = data[lfid+1-i]
-    i += 1
-  }
+	todecode := []byte{0, 0, 0, 0, 0, 0, 0, 0}
+	lfid := int(data[0] >> 4)
+	i := 1
+	for {
+		if i > lfid+1 {
+			break
+		}
+		todecode[7-(i-1)] = data[lfid+1-i]
+		i += 1
+	}
 
-  return int(binary.BigEndian.Uint32(todecode))
+	return int(binary.BigEndian.Uint32(todecode))
 }
 func (c *Client) Transfer_data(i int, data []byte) string {
 	request := service_transfer_data_make_request(i, data)

@@ -38,11 +38,13 @@ func NewIsotpConnection(rx, tx int64, rxfn func() (Message, bool),
 
 func (ic *IsotpConnection) sendPayloadAsSingleFrameOrMulti(payload []byte) {
 	if len(payload) <= 8 {
+		fmt.Println("less than 8")
 		msg_data := append([]byte{byte(0x0 | len(payload))}, payload...)
 		msg := ic.Stack.make_tx_msg(ic.Stack.address.txid, msg_data)
 		ic.Stack.txfn(msg)
 	} else {
-		chunkSize := 8
+		fmt.Println("more than 8")
+		chunkSize := 6
 		seq := 0
 		for i := 0; i < len(payload); i += chunkSize {
 			end := i + chunkSize
@@ -53,15 +55,17 @@ func (ic *IsotpConnection) sendPayloadAsSingleFrameOrMulti(payload []byte) {
 
 			chunk := payload[i:end]
 			tx_frame_length := len(chunk)
-      msg_data := []byte{}
+			msg_data := []byte{}
 			if seq == 0 {
 				msg_data = append([]byte{0x10 | byte((tx_frame_length>>8)&0xF), byte(tx_frame_length & 0xFF)}, chunk...)
 			} else {
 				msg_data = append([]byte{0x20 | byte(seq)}, chunk...)
 			}
 			msg := ic.Stack.make_tx_msg(ic.Stack.address.txid, msg_data)
+			fmt.Println("sending ", msg)
 			ic.Stack.txfn(msg)
 			seq += 1
+			time.Sleep(time.Second * 1)
 		}
 	}
 }
@@ -81,6 +85,7 @@ func (ic *IsotpConnection) Send_and_wait_for_reply(payload []byte) []byte {
 		if ic.Stack.address.is_for_me(msg) == false {
 			continue
 		}
+		fmt.Println("got reply", msg.Payload)
 		flow = append(flow, msg.Payload...)
 		if true {
 			break

@@ -11,7 +11,7 @@ func service_request_download_make_request(ml MemoryLocation) *Request {
 	r.data = append(r.data, ml.GetAddressBytes()...)
 	r.data = append(r.data, ml.GetMemorySizeBytes()...)
 
-  fmt.Println(r.data)
+	fmt.Println("request_download", r.data)
 	return r
 }
 
