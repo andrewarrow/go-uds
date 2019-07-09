@@ -1,21 +1,17 @@
 package uds
 
+import "fmt"
+
 func service_request_download_make_request(ml MemoryLocation) *Request {
 
-	ml.AlfidByte()
-
 	r := NewRequest(0x34, "request_download")
-	r.use_subfunction = true
+	r.use_subfunction = false
+	r.data = append(r.data, DataFormatId())
 	r.data = append(r.data, ml.AlfidByte())
 	r.data = append(r.data, ml.GetAddressBytes()...)
 	r.data = append(r.data, ml.GetMemorySizeBytes()...)
 
-	/*
-
-
-		request.data += memory_location.get_address_bytes()
-		request.data += memory_location.get_memorysize_bytes()
-	*/
+  fmt.Println(r.data)
 	return r
 }
 

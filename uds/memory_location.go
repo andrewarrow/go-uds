@@ -1,6 +1,7 @@
 package uds
 
 import "encoding/binary"
+//import "fmt"
 
 var address_map = map[int]int{
 	8:  1,
@@ -34,20 +35,25 @@ func NewMemoryLocation(address, length, address_format, memorysize_format int) *
 func (m *MemoryLocation) AlfidByte() byte {
 	return byte(((memsize_map[m.memorysize_format] << 4) | (address_map[m.address_format])) & 0xFF)
 }
+func DataFormatId() byte {
+  compression := 0
+  encryption := 0
+  return byte(((compression & 0xF) << 4) | (encryption & 0xF))
+}
 
 func (m *MemoryLocation) GetAddressBytes() []byte {
-	n := address_map[m.address_format]
+	//n := address_map[m.address_format]
 	bs := make([]byte, 8)
 	binary.BigEndian.PutUint64(bs, uint64(m.address))
 
-	return bs[n:7]
+	return bs[4:8]
 }
 func (m *MemoryLocation) GetMemorySizeBytes() []byte {
-	n := address_map[m.memorysize_format]
+	//n := memsize_map[m.memorysize_format]
 	bs := make([]byte, 8)
 	binary.BigEndian.PutUint64(bs, uint64(m.length))
 
-	return bs[n:7]
+	return bs[4:8]
 }
 
 /*

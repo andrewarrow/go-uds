@@ -56,8 +56,10 @@ func (c *Client) Simple_read_data_by_id(did, length int, flavor string) string {
 func (c *Client) Request_download(ml MemoryLocation) []byte {
 	request := service_request_download_make_request(ml)
 	payload := request.get_payload(false)
-	data := c.conn.Send_and_wait_for_reply(payload)
-	return data
+  fmt.Println(payload)
+	//data := c.conn.Send_and_wait_for_reply(payload)
+	//return data
+  return []byte{}
 }
 func (c *Client) Transfer_data(i int, data []byte) string {
 	request := service_transfer_data_make_request(i, data)
