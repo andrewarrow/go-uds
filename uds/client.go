@@ -2,6 +2,7 @@ package uds
 
 import "fmt"
 import "github.com/andrewarrow/go-uds/isotp"
+import "encoding/binary"
 
 type Client struct {
 	conn                       isotp.AnyConn
@@ -53,11 +54,23 @@ func (c *Client) Simple_read_data_by_id(did, length int, flavor string) string {
 	}
 	return fmt.Sprintf("%v", data[5:])
 }
-func (c *Client) Request_download(ml MemoryLocation) []byte {
+func (c *Client) Request_download(ml MemoryLocation) int {
 	request := service_request_download_make_request(ml)
 	payload := request.get_payload(false)
 	data := c.conn.Send_and_wait_for_reply(payload)
-	return data
+
+  todecode := []byte{0, 0, 0, 0, 0, 0, 0, 0}
+  lfid := int(data[0] >> 4)
+  i := 1
+  for {
+    if i > lfid+1 {
+      break
+    }
+    todecode[7-(i-1)] = data[lfid+1-i]
+    i += 1
+  }
+
+  return int(binary.BigEndian.Uint32(todecode))
 }
 func (c *Client) Transfer_data(i int, data []byte) string {
 	request := service_transfer_data_make_request(i, data)
