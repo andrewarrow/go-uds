@@ -79,11 +79,19 @@ func (c *Client) Request_download(ml MemoryLocation) int {
 func (c *Client) Transfer_data(i int, data []byte) string {
 	request := service_transfer_data_make_request(i, data)
 	payload := request.get_payload(false)
-	response := c.conn.Send_and_wait_for_reply(payload)
+	response := c.conn.Send_and_no_wait_for_reply(payload)
 	return fmt.Sprintf("%v", response)
 }
 func (c *Client) Request_transfer_exit(crc int) string {
-	return fmt.Sprintf("%v", "")
+	r := NewRequest(0x37, "transfer_exit")
+	bs := make([]byte, 4)
+	binary.BigEndian.PutUint32(bs, uint32(crc))
+	fmt.Println(bs)
+	r.data = bs
+	r.use_subfunction = false
+	payload := r.get_payload(false)
+	c.conn.Send_and_no_wait_for_reply(payload)
+	return fmt.Sprintf("%v", crc)
 }
 func (c *Client) Change_session(session int) string {
 	request := service_diagnostic_session_make_request(session)

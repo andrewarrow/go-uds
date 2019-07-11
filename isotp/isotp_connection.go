@@ -12,6 +12,7 @@ type AnyConn interface {
 	Wait_frame() []byte
 	Send_and_grant_flow_request(payload []byte, length int) []byte
 	Send_and_wait_for_reply(payload []byte) []byte
+	Send_and_no_wait_for_reply(payload []byte) []byte
 }
 
 type IsotpConnection struct {
@@ -39,13 +40,13 @@ func NewIsotpConnection(rx, tx int64, rxfn func() (Message, bool),
 func (ic *IsotpConnection) asSingleFrameOrMulti(payload []byte) []Message {
 	ms := []Message{}
 	if len(payload) <= 8 {
-		fmt.Println("less than 8")
+		//fmt.Println("less than 8")
 		msg_data := append([]byte{byte(0x0 | len(payload))}, payload...)
 		msg := ic.Stack.make_tx_msg(ic.Stack.address.txid, msg_data)
 		//ic.Stack.txfn(msg)
 		ms = append(ms, msg)
 	} else {
-		fmt.Println("more than 8")
+		//fmt.Println("more than 8")
 		chunkSize := 6
 		seq := 0
 		for i := 0; i < len(payload); i += chunkSize {
@@ -57,22 +58,40 @@ func (ic *IsotpConnection) asSingleFrameOrMulti(payload []byte) []Message {
 
 			chunk := payload[i:end]
 			tx_frame_length := len(payload)
+			encode_length_on_2_first_bytes := false
+			if tx_frame_length <= 4095 {
+				encode_length_on_2_first_bytes = true
+			}
+
 			msg_data := []byte{}
 			if seq == 0 {
-				msg_data = append([]byte{0x10 | byte((tx_frame_length>>8)&0xF), byte(tx_frame_length & 0xFF)}, chunk...)
+				if encode_length_on_2_first_bytes {
+					msg_data = append([]byte{0x10 | byte((tx_frame_length>>8)&0xF), byte(tx_frame_length & 0xFF)}, chunk...)
+				} else {
+					msg_data = append([]byte{0x10, 0x00, byte(tx_frame_length>>24) & 0xFF, byte(tx_frame_length>>16) & 0xFF, byte(tx_frame_length>>8) & 0xFF, byte(tx_frame_length>>0) & 0xFF}, chunk...)
+				}
 			} else {
 				msg_data = append([]byte{0x20 | byte(seq)}, chunk...)
 			}
 			msg := ic.Stack.make_tx_msg(ic.Stack.address.txid, msg_data)
-			fmt.Println("sending ", msg)
+			//fmt.Println("sending ", msg)
 			//	ic.Stack.txfn(msg)
 			ms = append(ms, msg)
-			seq += 1
+			seq = (seq + 1) & 0xF
 		}
 	}
 	return ms
 }
 
+func (ic *IsotpConnection) Send_and_no_wait_for_reply(payload []byte) []byte {
+
+	msgs := ic.asSingleFrameOrMulti(payload)
+	for _, msg := range msgs {
+		ic.Stack.txfn(msg)
+		time.Sleep(time.Millisecond * 1)
+	}
+	return []byte{}
+}
 func (ic *IsotpConnection) Send_and_wait_for_reply(payload []byte) []byte {
 
 	msgs := ic.asSingleFrameOrMulti(payload)
