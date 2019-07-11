@@ -36,12 +36,14 @@ func NewIsotpConnection(rx, tx int64, rxfn func() (Message, bool),
 	return &ic
 }
 
-func (ic *IsotpConnection) sendPayloadAsSingleFrameOrMulti(payload []byte) {
+func (ic *IsotpConnection) asSingleFrameOrMulti(payload []byte) []Message {
+	ms := []Message{}
 	if len(payload) <= 8 {
 		fmt.Println("less than 8")
 		msg_data := append([]byte{byte(0x0 | len(payload))}, payload...)
 		msg := ic.Stack.make_tx_msg(ic.Stack.address.txid, msg_data)
-		ic.Stack.txfn(msg)
+		//ic.Stack.txfn(msg)
+		ms = append(ms, msg)
 	} else {
 		fmt.Println("more than 8")
 		chunkSize := 6
@@ -54,7 +56,7 @@ func (ic *IsotpConnection) sendPayloadAsSingleFrameOrMulti(payload []byte) {
 			}
 
 			chunk := payload[i:end]
-			tx_frame_length := len(chunk)
+			tx_frame_length := len(payload)
 			msg_data := []byte{}
 			if seq == 0 {
 				msg_data = append([]byte{0x10 | byte((tx_frame_length>>8)&0xF), byte(tx_frame_length & 0xFF)}, chunk...)
@@ -63,32 +65,37 @@ func (ic *IsotpConnection) sendPayloadAsSingleFrameOrMulti(payload []byte) {
 			}
 			msg := ic.Stack.make_tx_msg(ic.Stack.address.txid, msg_data)
 			fmt.Println("sending ", msg)
-			ic.Stack.txfn(msg)
+			//	ic.Stack.txfn(msg)
+			ms = append(ms, msg)
 			seq += 1
-			time.Sleep(time.Second * 1)
 		}
 	}
+	return ms
 }
 
 func (ic *IsotpConnection) Send_and_wait_for_reply(payload []byte) []byte {
 
-	ic.sendPayloadAsSingleFrameOrMulti(payload)
+	msgs := ic.asSingleFrameOrMulti(payload)
 	flow := []byte{}
 
 	t1 := time.Now().Unix()
-	for {
-		if time.Now().Unix()-t1 > 5 {
-			fmt.Println("timeout1")
-			break
-		}
-		msg, _ := ic.Stack.rxfn()
-		if ic.Stack.address.is_for_me(msg) == false {
-			continue
-		}
-		fmt.Println("got reply", msg.Payload)
-		flow = append(flow, msg.Payload...)
-		if true {
-			break
+	for _, msg := range msgs {
+		flow = []byte{}
+		ic.Stack.txfn(msg)
+		for {
+			if time.Now().Unix()-t1 > 15 {
+				fmt.Println("timeout1")
+				break
+			}
+			msg, _ := ic.Stack.rxfn()
+			if ic.Stack.address.is_for_me(msg) == false {
+				continue
+			}
+			fmt.Println("got reply", msg.Payload)
+			flow = append(flow, msg.Payload...)
+			if true {
+				break
+			}
 		}
 	}
 	return flow

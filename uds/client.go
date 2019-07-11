@@ -59,19 +59,22 @@ func (c *Client) Request_download(ml MemoryLocation) int {
 	payload := request.get_payload(false)
 	fmt.Println("client, Request_download", payload)
 	data := c.conn.Send_and_wait_for_reply(payload)
+	data = data[2:]
 
+	fmt.Println(data)
 	todecode := []byte{0, 0, 0, 0, 0, 0, 0, 0}
 	lfid := int(data[0] >> 4)
 	i := 1
 	for {
-		if i > lfid+1 {
+		if i >= lfid+1 {
 			break
 		}
 		todecode[7-(i-1)] = data[lfid+1-i]
 		i += 1
 	}
 
-	return int(binary.BigEndian.Uint32(todecode))
+	fmt.Println(lfid, todecode, int(binary.BigEndian.Uint64(todecode)))
+	return int(binary.BigEndian.Uint64(todecode))
 }
 func (c *Client) Transfer_data(i int, data []byte) string {
 	request := service_transfer_data_make_request(i, data)
