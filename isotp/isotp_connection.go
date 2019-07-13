@@ -38,6 +38,13 @@ func NewIsotpConnection(rx, tx int64, rxfn func() (Message, bool),
 }
 
 func (ic *IsotpConnection) asSingleFrameOrMulti(payload []byte) []Message {
+	tx_buffer := append([]byte{}, payload...)
+	tx_frame_length := len(payload)
+	encode_length_on_2_first_bytes := false
+	if tx_frame_length <= 4095 {
+		encode_length_on_2_first_bytes = true
+	}
+
 	ms := []Message{}
 	if len(payload) <= 8 {
 		//fmt.Println("less than 8")
@@ -47,37 +54,36 @@ func (ic *IsotpConnection) asSingleFrameOrMulti(payload []byte) []Message {
 		ms = append(ms, msg)
 	} else {
 		//fmt.Println("more than 8")
-		chunkSize := 6
 		seq := 0
-		for i := 0; i < len(payload); i += chunkSize {
-			end := i + chunkSize
-
-			if end > len(payload) {
-				end = len(payload)
-			}
-
-			chunk := payload[i:end]
-			tx_frame_length := len(payload)
-			encode_length_on_2_first_bytes := false
-			if tx_frame_length <= 4095 {
-				encode_length_on_2_first_bytes = true
-			}
-
+		for {
 			msg_data := []byte{}
+			data_length := 7
+			if len(tx_buffer) < 7 {
+				data_length = len(tx_buffer)
+			}
 			if seq == 0 {
 				if encode_length_on_2_first_bytes {
-					msg_data = append([]byte{0x10 | byte((tx_frame_length>>8)&0xF), byte(tx_frame_length & 0xFF)}, chunk...)
+					data_length = 6
+					msg_data = append([]byte{0x10 | byte((tx_frame_length>>8)&0xF), byte(tx_frame_length & 0xFF)},
+						tx_buffer[0:data_length]...)
 				} else {
-					msg_data = append([]byte{0x10, 0x00, byte(tx_frame_length>>24) & 0xFF, byte(tx_frame_length>>16) & 0xFF, byte(tx_frame_length>>8) & 0xFF, byte(tx_frame_length>>0) & 0xFF}, chunk...)
+					data_length = 2
+					msg_data = append([]byte{0x10, 0x00, byte(tx_frame_length>>24) & 0xFF, byte(tx_frame_length>>16) & 0xFF, byte(tx_frame_length>>8) & 0xFF, byte(tx_frame_length>>0) & 0xFF}, tx_buffer[0:data_length]...)
 				}
 			} else {
-				msg_data = append([]byte{0x20 | byte(seq)}, chunk...)
+				msg_data = append([]byte{0x20 | byte(seq)}, tx_buffer[0:data_length]...)
 			}
+
 			msg := ic.Stack.make_tx_msg(ic.Stack.address.txid, msg_data)
 			//fmt.Println("sending ", msg)
 			//	ic.Stack.txfn(msg)
 			ms = append(ms, msg)
 			seq = (seq + 1) & 0xF
+			if len(tx_buffer) > 7 {
+				tx_buffer = tx_buffer[data_length:]
+			} else {
+				break
+			}
 		}
 	}
 	return ms
@@ -88,7 +94,7 @@ func (ic *IsotpConnection) Send_and_no_wait_for_reply(payload []byte) []byte {
 	msgs := ic.asSingleFrameOrMulti(payload)
 	for _, msg := range msgs {
 		ic.Stack.txfn(msg)
-		time.Sleep(time.Millisecond * 1)
+		//time.Sleep(time.Millisecond * 1)
 	}
 	return []byte{}
 }
