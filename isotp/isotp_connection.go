@@ -55,13 +55,15 @@ func (ic *IsotpConnection) asSingleFrameOrMulti(payload []byte) []Message {
 	} else {
 		//fmt.Println("more than 8")
 		seq := 0
+		first_time := true
 		for {
 			msg_data := []byte{}
 			data_length := 7
 			if len(tx_buffer) < 7 {
 				data_length = len(tx_buffer)
 			}
-			if seq == 0 {
+			if seq == 0 && first_time {
+				first_time = false
 				if encode_length_on_2_first_bytes {
 					data_length = 6
 					msg_data = append([]byte{0x10 | byte((tx_frame_length>>8)&0xF), byte(tx_frame_length & 0xFF)},
