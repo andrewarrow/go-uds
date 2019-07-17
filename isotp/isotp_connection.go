@@ -96,8 +96,8 @@ func (ic *IsotpConnection) Send_and_no_wait_for_reply(payload []byte) []byte {
 	msgs := ic.asSingleFrameOrMulti(payload)
 	for _, msg := range msgs {
 		ic.Stack.txfn(msg)
-		//time.Sleep(time.Millisecond * 1)
 	}
+	time.Sleep(time.Millisecond * 250)
 	return []byte{}
 }
 func (ic *IsotpConnection) Send_and_wait_for_reply(payload []byte) []byte {

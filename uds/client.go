@@ -79,7 +79,6 @@ func (c *Client) Request_download(ml MemoryLocation) int {
 func (c *Client) Transfer_data(i int, data []byte) string {
 	request := service_transfer_data_make_request(i, data)
 	payload := request.get_payload(false)
-	fmt.Println(222, len(payload), payload)
 	response := c.conn.Send_and_no_wait_for_reply(payload)
 	return fmt.Sprintf("%v", response)
 }
