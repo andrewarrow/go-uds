@@ -110,7 +110,7 @@ func (ic *IsotpConnection) Send_and_wait_for_reply(payload []byte) []byte {
 		flow = []byte{}
 		ic.Stack.txfn(msg)
 		for {
-			if time.Now().Unix()-t1 > 15 {
+			if time.Now().Unix()-t1 > 5 {
 				fmt.Println("timeout1")
 				break
 			}
@@ -136,7 +136,7 @@ func (ic *IsotpConnection) Send_and_grant_flow_request(payload []byte, length in
 
 	t1 := time.Now().Unix()
 	for {
-		if time.Now().Unix()-t1 > 5 {
+		if time.Now().Unix()-t1 > 2 {
 			fmt.Println("timeout1")
 			break
 		}
@@ -158,7 +158,7 @@ func (ic *IsotpConnection) Send_and_grant_flow_request(payload []byte, length in
 	// read flow
 	t1 = time.Now().Unix()
 	for {
-		if time.Now().Unix()-t1 > 5 {
+		if time.Now().Unix()-t1 > 2 {
 			fmt.Println("timeout2")
 			break
 		}

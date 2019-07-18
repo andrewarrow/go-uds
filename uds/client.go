@@ -50,9 +50,15 @@ func (c *Client) Simple_read_data_by_id(did, length int, flavor string) string {
 	payload := request.get_payload(false)
 	data := c.conn.Send_and_grant_flow_request(payload, length)
 	if flavor == "text" {
-		return string(data[5:])
+		if len(data) > 5 {
+			return string(data[5:])
+		}
+		return string(data)
 	}
-	return fmt.Sprintf("%v", data[5:])
+	if len(data) > 5 {
+		return fmt.Sprintf("%v", data[5:])
+	}
+	return fmt.Sprintf("%v", data)
 }
 func (c *Client) Request_download(ml MemoryLocation) int {
 	request := service_request_download_make_request(ml)
