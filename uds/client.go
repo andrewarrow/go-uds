@@ -110,12 +110,12 @@ func (c *Client) Unlock_security_access(level int, algo func(seed []byte, params
 	payload := request.get_payload(false)
 	seed := c.conn.Send_and_wait_for_reply(payload)
 	//TODO review this result
-	fmt.Sprintf("%v", seed)
+	fmt.Printf("%v\n", seed)
 
 	request = service_security_access_make_request(level, "sendkey", algo(seed, 0))
 	payload = request.get_payload(false)
 	data := c.conn.Send_and_wait_for_reply(payload)
-	fmt.Sprintf("%v", data)
+	fmt.Printf("%v\n", data)
 	//TODO review this result
 	return ""
 }
