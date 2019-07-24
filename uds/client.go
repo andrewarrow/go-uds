@@ -105,3 +105,17 @@ func (c *Client) Change_session(session int) string {
 	data := c.conn.Send_and_wait_for_reply(payload)
 	return fmt.Sprintf("%v", data)
 }
+func (c *Client) Unlock_security_access(level int, algo func(seed []byte, params int) []byte) string {
+	request := service_security_access_make_request(level, "request_seed", []byte{})
+	payload := request.get_payload(false)
+	seed := c.conn.Send_and_wait_for_reply(payload)
+	//TODO review this result
+	fmt.Sprintf("%v", seed)
+
+	request = service_security_access_make_request(level, "sendkey", algo(seed, 0))
+	payload = request.get_payload(false)
+	data := c.conn.Send_and_wait_for_reply(payload)
+	fmt.Sprintf("%v", data)
+	//TODO review this result
+	return ""
+}
