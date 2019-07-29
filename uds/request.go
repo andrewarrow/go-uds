@@ -19,7 +19,7 @@ func NewRequest(sid byte, service string) *Request {
 func (r *Request) get_payload(suppress_positive_response bool) []byte {
 	payload := []byte{r.sid}
 	if r.use_subfunction {
-		r.data = []byte{r.subfunction}
+		r.data = append([]byte{r.subfunction}, r.data...)
 	} else {
 	}
 	return append(payload, r.data...)
